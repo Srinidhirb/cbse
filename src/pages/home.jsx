@@ -12,6 +12,7 @@ import step3 from '../Assets/step3.png'; // Replace with your step images
 import step4 from '../Assets/step4.png'; // Replace with your step images
 import TestimonialSection from '../components/TestimonialSection';
 import CardCarousel from '../components/CardCarousel';
+import Banner from '../components/Banner';
 
 function home() {
   const [selectedStep, setSelectedStep] = useState('signup');
@@ -33,7 +34,7 @@ function home() {
   };
 
   return (
-    <div className="App">
+    <div className="App bg-bgblue">
       <Nav />
       {/* Hero Section */}
       <div className='w-full h-[90vh] flex justify-evenly items-center flex-col md:flex-row flex-wrap'>
@@ -128,6 +129,7 @@ function home() {
 
       <CardCarousel/>
       <TestimonialSection/>
+      <Banner/>
     </div>
   );
 }

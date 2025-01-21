@@ -1,5 +1,6 @@
 import React from 'react';
 import test from '../Assets/testinomial.png';
+import Thumb from '../Assets/thumbsUp.png';
 
 const testimonials = [
   {
@@ -39,20 +40,24 @@ const TestimonialCard = ({ testimonial, name, year, image, rating, indent, order
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           {/* Star Rating */}
-          <div className="flex text-yellow-400">
+          <div className="flex text-customBlue">
             {Array(rating).fill().map((_, i) => (
               <svg key={i} className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 .587l3.668 7.431 8.167 1.151-6 5.771 1.428 8.06L12 18.897l-7.263 3.978L6.165 15.94l-6-5.77 8.166-1.152z" />
               </svg>
             ))}
           </div>
+          <div className='flex gap-1 items-center '>
+            <img src={Thumb} alt="" />
           <div className="text-blue-500 font-semibold text-sm">Testimonial</div>
+          </div>
         </div>
 
         <p className="text-gray-600">{testimonial}</p>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <h3 className="font-semibold text-lg">{name}</h3>
-          <p className="text-gray-500 mt-1 text-sm">{year}</p>
+          <div className="w-[2px] h-6 bg-black opacity-60"></div>
+          <p className="text-gray-500  text-sm">{year}</p>
         </div>
       </div>
       <div className="w-40 h-28 overflow-hidden">

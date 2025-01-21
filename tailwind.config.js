@@ -2,7 +2,13 @@
 module.exports = {
   content: ["./src/**/*.{html,js,jsx,ts,tsx}"], // Adjust paths as needed
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        customBlue: '#3E66DF',
+        lightblue: '#BDF1F6' ,
+        bgblue:' #F2FCFC'// Add your custom color here
+      },
+    },
   },
   plugins: [],
 };
