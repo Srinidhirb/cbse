@@ -13,6 +13,7 @@ import step4 from '../Assets/step4.png'; // Replace with your step images
 import TestimonialSection from '../components/TestimonialSection';
 import CardCarousel from '../components/CardCarousel';
 import Banner from '../components/Banner';
+import Footer from '../components/Footer';
 
 function home() {
   const [selectedStep, setSelectedStep] = useState('signup');
@@ -130,6 +131,7 @@ function home() {
       <CardCarousel/>
       <TestimonialSection/>
       <Banner/>
+      <Footer/>
     </div>
   );
 }

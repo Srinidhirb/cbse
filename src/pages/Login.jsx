@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import Nav from "../components/Nav";
-import Slider from "../components/LoginSlider";
-import LoginSlider from "../components/LoginSlider";
 
+import LoginSlider from "../components/LoginSlider";
+import { Link} from "react-router-dom";
 
 const Login = () => {
   const [step, setStep] = useState(1);
@@ -25,14 +25,14 @@ const Login = () => {
        <LoginSlider/>
 
         {/* Login Section */}
-        <div className="flex flex-col items-center justify-center">
-          <h1 className="text-2xl font-semibold mb-6">Login</h1>
-
+        <div className="flex flex-col w-2/5 items-center justify-center">
+          <h1 className="text-2xl font-bold mb-6">Login</h1>
+         < p className="text-center text-gray-600 mb-6">Welcome to</p>
           {step === 1 && (
             <div className="flex flex-col gap-6">
               {/* Step Indicator */}
               <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center w-8 h-8 bg-blue-400 text-white rounded-full font-semibold">
+                <div className="flex items-center justify-center w-8 h-8 bg-lightblue text-black rounded-full font-semibold">
                   1
                 </div>
                 <div className="h-px flex-1 border-t border-dotted border-gray-500"></div>
@@ -59,7 +59,7 @@ const Login = () => {
                 />
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-blue-400 text-white rounded-md hover:bg-blue-500"
+                  className="px-6 py-2 bg-lightblue text-black rounded-md hover:bg-blue-500"
                 >
                   Submit
                 </button>
@@ -75,7 +75,7 @@ const Login = () => {
                   ✓
                 </div>
                 <div className="h-px flex-1 border-t border-dotted border-gray-500"></div>
-                <div className="flex items-center justify-center w-8 h-8 bg-blue-400 text-white rounded-full font-semibold">
+                <div className="flex items-center justify-center w-8 h-8 bg-lightblue text-black rounded-full font-semibold">
                   2
                 </div>
               </div>
@@ -97,19 +97,17 @@ const Login = () => {
               </div>
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-400 text-white rounded-md hover:bg-blue-500"
+                className="px-6 py-2 bg-lightblue text-black rounded-md hover:bg-blue-500"
               >
                 Submit
               </button>
             </div>
           )}
-
-          <p className="mt-6 text-sm">
-            Don't have an account?{" "}
-            <a href="#" className="text-blue-500">
-              Sign Up
-            </a>
-          </p>
+          <p className="text-center text-gray-600 mt-6">
+          Don't have an account?{" "}
+              <Link to='/register'> <span className="text-blue-500 cursor-pointer">  Sign Up</span></Link>
+            </p>
+          
         </div>
       </div>
     </>
