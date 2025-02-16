@@ -37,7 +37,7 @@ function Courses() {
         <div className="mb-8 border border-blueborder  rounded-lg">
           <button
             onClick={() => toggleSection("scienceGrade10")}
-            className="w-full text-left p-4 bg-white    text-blue-900 font-semibold rounded-lg flex justify-between items-center"
+            className="w-full text-left p-4 bg-white    text-black font-semibold rounded-lg flex justify-between items-center"
           >
             Science Courses for Grades 10
             <span>{selectedSection === "scienceGrade10" ? "▲" : "▼"}</span>
@@ -68,7 +68,7 @@ function Courses() {
         <div className="mb-8 border border-blueborder  rounded-lg">
           <button
             onClick={() => toggleSection("MathGrade10")}
-            className="w-full text-left p-4 bg-white    text-blue-900 font-semibold rounded-lg flex justify-between items-center"
+            className="w-full text-left p-4 bg-white    text-black font-semibold rounded-lg flex justify-between items-center"
           >
             Science Courses for Grades 9
             <span>{selectedSection === "MathGrade10" ? "▲" : "▼"}</span>
@@ -101,7 +101,7 @@ function Courses() {
         <div className="mb-8 border border-blueborder  rounded-lg">
           <button
             onClick={() => toggleSection("mathGrade9")}
-            className="w-full text-left p-4 bg-white    text-blue-900 font-semibold rounded-lg flex justify-between items-center"
+            className="w-full text-left p-4 bg-white    text-black font-semibold rounded-lg flex justify-between items-center"
           >
             Math Courses for Grades 10
             <span>{selectedSection === "mathGrade9" ? "▲" : "▼"}</span>
@@ -132,7 +132,7 @@ function Courses() {
         <div className="mb-4 border border-blueborder  rounded-lg">
           <button
             onClick={() => toggleSection("mathGrade10")}
-            className="w-full text-left p-4 bg-white    text-blue-900 font-semibold rounded-lg flex justify-between items-center"
+            className="w-full text-left p-4 bg-white    text-black font-semibold rounded-lg flex justify-between items-center"
           >
             Math Courses for Grades 9
             <span>{selectedSection === "mathGrade10" ? "▲" : "▼"}</span>

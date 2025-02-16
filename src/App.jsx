@@ -7,17 +7,20 @@ import Home from "./pages/home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Courses from "./pages/Courses";
+import Admin from "./admin/home";
+import Content from "./admin/Content";
 
 function App() {
   return (
     <>
       <Router>
         <Routes>
-          {/* Define routes using the Route component */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/courses" element={<Courses />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/content" element={<Content />} />
         </Routes>
       </Router>
     </>
@@ -25,3 +28,4 @@ function App() {
 }
 
 export default App;
+

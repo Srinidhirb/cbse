@@ -21,6 +21,10 @@ const Nav = () => {
           </li>
         </Link>
         <li className=" font-semibold hover:font-semibold text-lg hover:underline underline-offset-8  cursor-pointer">
+          FAQ
+        </li>
+       
+        <li className=" font-semibold hover:font-semibold text-lg hover:underline underline-offset-8  cursor-pointer">
           Contact Us
         </li>
       </ul>
