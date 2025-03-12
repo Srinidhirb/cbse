@@ -17,7 +17,7 @@ function AdminNavbar() {
           <Link to="/admin/dashboard" className="hover:text-gray-400">Dashboard</Link>
           <Link to="/admin/users" className="hover:text-gray-400">Users</Link>
           <Link to="/admin/content" className="hover:text-gray-400">Content</Link>
-          <Link to="/admin/reports" className="hover:text-gray-400">Reports</Link>
+          <Link to="/admin/AddNote" className="hover:text-gray-400">AddNote</Link>
           <Link to="/admin/settings" className="hover:text-gray-400">Settings</Link>
         </div>
 
@@ -36,7 +36,7 @@ function AdminNavbar() {
           <Link to="/admin/dashboard" className="hover:text-gray-400">Dashboard</Link>
           <Link to="/admin/users" className="hover:text-gray-400">Users</Link>
           <Link to="/admin/content" className="hover:text-gray-400">Content</Link>
-          <Link to="/admin/reports" className="hover:text-gray-400">Reports</Link>
+          <Link to="/admin/AddNote" className="hover:text-gray-400">AddNote</Link>
           <Link to="/admin/settings" className="hover:text-gray-400">Settings</Link>
         </div>
       )}

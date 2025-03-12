@@ -33,11 +33,11 @@ function Home() {
 
       {/* Section: Reports & Analytics */}
       <div className="bg-gray-100 p-4 rounded-lg shadow-md mb-4">
-        <h2 className="text-xl font-semibold mb-2">Reports & Analytics</h2>
-        <p className="text-gray-600">View system analytics and generate reports.</p>
-        <Link to="/admin/reports">
+        <h2 className="text-xl font-semibold mb-2">Add Notes</h2>
+        <p className="text-gray-600">Add notes for class 9 and 10 </p>
+        <Link to="/admin/AddNote">
           <button className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-            View Reports
+            Add Notes
           </button>
         </Link>
       </div>
