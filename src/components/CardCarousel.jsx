@@ -36,7 +36,11 @@ const CardCarousel = () => {
     <div className="w-full max-w-6xl mx-auto relative py-4">
       <span className="text-center text-3xl font-semibold block mb-10">Latest Content</span>
 
-      {isLoading && <Spinner size="xl" color="blue.500" className="flex justify-center my-4" />}
+      {isLoading && (
+        <div className="flex items-center justify-center h-screen">
+          <Spinner size="xl" color="blue.500" />
+        </div>
+      )}
       {isError && <p className="text-red-500 text-center">Failed to load videos</p>}
 
       {!isLoading && !isError && videos?.length > 0 && (

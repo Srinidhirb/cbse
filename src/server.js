@@ -5,8 +5,9 @@ import multer from "multer";
 import bodyParser from "body-parser";
 import path from "path";
 import fs from "fs";
-
+import bcrypt from "bcryptjs";
 const app = express();
+import nodemailer from "nodemailer";
 
 // Middleware
 app.use(cors());
@@ -61,8 +62,8 @@ const noteSchema = new mongoose.Schema({
   title: String,
   description: String,  // ✅ New Field
   youtubeLinks: [String], // ✅ New Field (Array of URLs)
-  testPaper: String, // ✅ New Field (Optional)
-  files: [String], 
+
+  files: [String],
 });
 
 
@@ -104,21 +105,22 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // ✅ API Route - Add Note with File Upload
-app.post("/addNote", upload.fields([{ name: "files", maxCount: 5 }, { name: "testPaper", maxCount: 1 }]), async (req, res) => {
+app.post("/addNote", upload.fields([{ name: "files", maxCount: 5 }]), async (req, res) => {
 
   try {
     const { category, title, description, youtubeLinks } = req.body;
-    const testPaperFile = req.files["testPaper"] ? req.files["testPaper"][0].path : "";
+
     const Model = getModel(category);
     if (!Model) return res.status(400).json({ error: "❌ Invalid category" });
 
-    const filePaths = req.files.map((file) => file.path);
-    
+    const filePaths = req.files.files ? req.files.files.map((file) => file.path) : [];
+
+
     const newNote = new Model({
       title,
       description,
       youtubeLinks: youtubeLinks ? youtubeLinks.split(",") : [], // Convert string to array
-      testPaper: testPaperFile, // Store file path
+
 
       files: filePaths,
     });
@@ -144,12 +146,27 @@ app.get("/notes/:category", async (req, res) => {
     res.status(500).json({ error: "❌ Error fetching notes" });
   }
 });
+app.get("/note/:category/:id", async (req, res) => {
+  try {
+    const { category, id } = req.params;
+    const Model = getModel(category);
+    if (!Model) return res.status(400).json({ error: "❌ Invalid category" });
+
+    const note = await Model.findById(id);
+    if (!note) return res.status(404).json({ error: "❌ Note not found" });
+
+    res.status(200).json(note);
+  } catch (error) {
+    res.status(500).json({ error: "❌ Error fetching note" });
+  }
+});
 
 // ✅ API Route - Update Note (Supports File Updates)
 app.put("/updateNote/:category/:id", upload.array("files", 5), async (req, res) => {
   try {
     const { category, id } = req.params;
-    const { title, description, youtubeLinks, testPaper } = req.body;
+    const { title, description, youtubeLinks } = req.body; // ✅ Extract from body
+
     const Model = getModel(category);
     if (!Model) return res.status(400).json({ error: "❌ Invalid category" });
 
@@ -158,18 +175,20 @@ app.put("/updateNote/:category/:id", upload.array("files", 5), async (req, res) 
 
     const filePaths = req.files.length > 0 ? req.files.map((file) => file.path) : note.files;
 
-    note.title = title || note.title;
-    note.description = description || note.description;
-    note.youtubeLinks = youtubeLinks ? youtubeLinks.split(",") : note.youtubeLinks;
-    note.testPaper = testPaper || note.testPaper;
+    // ✅ Update fields safely
+    if (title) note.title = title;
+    if (description) note.description = description;
+    if (youtubeLinks) note.youtubeLinks = youtubeLinks.split(",");
     note.files = filePaths;
 
     await note.save();
     res.status(200).json({ message: "✅ Note updated successfully", data: note });
   } catch (error) {
-    res.status(500).json({ error: "❌ Error updating note" });
+    console.error("❌ Error updating note:", error);
+    res.status(500).json({ error: "❌ Error updating note", details: error.message });
   }
 });
+
 
 
 
@@ -193,6 +212,154 @@ app.get("/uploads/:filename", (req, res) => {
   const filePath = path.join(__dirname, "uploads", filename);
   res.sendFile(filePath);
 });
+
+const userSchema = new mongoose.Schema({
+  fullName: String,
+  emailAddress: { type: String, required: true, unique: true },
+  password: String,
+  phoneNumber: String,
+  dateOfBirth: String,
+  gender: String,
+  referralId: String,
+  otp: String, // Add OTP field
+  otpExpires: Date, // Add OTP expiry field
+});
+
+
+const User = mongoose.model("User", userSchema);
+
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "srinidhirb03@gmail.com",
+    pass: "dzqk ayed kexw udnf",
+  },
+});
+const generateOTP = () => Math.floor(1000 + Math.random() * 9000).toString();
+
+app.post("/register", async (req, res) => {
+  try {
+    const { fullName, emailAddress, password, phoneNumber, dateOfBirth, gender, referralId } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ emailAddress });
+    if (existingUser) {
+      return res.status(400).json({ error: "❌ Email already registered" });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create new user
+    const newUser = new User({
+      fullName,
+      emailAddress,
+      password: hashedPassword,
+      phoneNumber,
+      dateOfBirth,
+      gender,
+      referralId,
+    });
+
+    await newUser.save();
+    res.status(201).json({ message: "✅ User registered successfully", data: newUser });
+  } catch (error) {
+    res.status(500).json({ error: "❌ Error registering user" });
+  }
+});
+
+const sendOTPEmail = async (email, otp) => {
+  try {
+    const mailOptions = {
+      from: "srinidhirb03@gmail.com",
+      to: email,
+      subject: "Your OTP Code",
+      text: `Your OTP for login is: ${otp}. It will expire in 5 minutes.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ OTP sent successfully to ${email}`);
+  } catch (error) {
+    console.error("❌ Error sending email:", error);
+    throw new Error("Failed to send OTP email");
+  }
+};
+
+app.post("/send-otp", async (req, res) => {
+  console.log("Received data:", req.body);
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "❌ Email is required" });
+  }
+
+  try {
+    let user = await User.findOne({ emailAddress: email });
+
+    
+    if (!user) {
+      // Explicitly tell the user to register
+      return res.status(400).json({ error: "❌ User not registered. Please sign up." });
+    }
+
+    // Generate OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // OTP valid for 5 minutes
+
+    // Update existing user with OTP
+    user.otp = otp;
+    user.otpExpires = otpExpires;
+    await user.save();
+
+    // ✅ Call sendOTPEmail function
+    await sendOTPEmail(email, otp);
+
+    res.status(200).json({ message: "✅ OTP sent successfully" });
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+    res.status(500).json({ error: "❌ Error sending OTP" });
+  }
+});
+
+
+app.post("/verify-otp", async (req, res) => {
+  const { email, otp } = req.body;
+
+  try {
+    // 🔥 FIX: Query by `emailAddress`, not `email`
+    const user = await User.findOne({ emailAddress: email });
+
+    if (!user) {
+      return res.status(400).json({ error: "❌ User not found" });
+    }
+
+    // 🔥 FIX: Convert OTP to string before comparing
+    if (user.otp !== otp.toString()) {
+      return res.status(400).json({ error: "❌ Invalid OTP" });
+    }
+
+    // 🔥 FIX: Ensure `otpExpires` is a valid Date object
+    if (new Date() > new Date(user.otpExpires)) {
+      return res.status(400).json({ error: "❌ OTP has expired" });
+    }
+
+    // ✅ Clear OTP after successful verification
+    user.otp = null;
+    user.otpExpires = null;
+    await user.save();
+
+    res.status(200).json({ message: "✅ OTP verified successfully" });
+  } catch (error) {
+    console.error("❌ Error verifying OTP:", error);
+    res.status(500).json({ error: "❌ Error verifying OTP" });
+  }
+});
+
+
+
+
+
 
 // Start Server
 app.listen(5000, () => console.log("🚀 Server running on port 5000"));

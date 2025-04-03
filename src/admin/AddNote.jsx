@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useDisclosure, UnorderedList, ListItem , Flex } from "@chakra-ui/react";
+import { useDisclosure, UnorderedList, ListItem, Flex } from "@chakra-ui/react";
 import {
   Box,
   Button,
@@ -33,6 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogBody,
   AlertDialogFooter,
+  List,
 } from "@chakra-ui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { EditIcon, DeleteIcon, ViewIcon } from "@chakra-ui/icons";
@@ -98,8 +99,6 @@ const AddNote = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [description, setDescription] = useState("");
   const [youtubeLinks, setYoutubeLinks] = useState("");
-  const [testPaper, setTestPaper] = useState(null);
-
 
   const [initialTitle, setInitialTitle] = useState("");
   const [initialFiles, setInitialFiles] = useState([]);
@@ -159,7 +158,6 @@ const AddNote = () => {
       setInitialFiles(selectedNote.files);
       setDescription(selectedNote.description || ""); // ✅ Added
       setYoutubeLinks(selectedNote.youtubeLinks?.join(",") || ""); // ✅ Added
-      setTestPaper(selectedNote.testPaper || ""); // ✅ Added
     }
   }, [editingId, selectedNote]);
 
@@ -203,11 +201,9 @@ const AddNote = () => {
     const formData = new FormData();
     formData.append("category", category);
     formData.append("title", title);
-    formData.append("description", description); 
-    formData.append("youtubeLinks", youtubeLinks); 
-    if (testPaper) {
-      formData.append("testPaper", testPaper);
-    }
+    formData.append("description", description);
+    formData.append("youtubeLinks", youtubeLinks);
+
     files.forEach((file) => formData.append("files", file));
 
     editingId
@@ -224,7 +220,7 @@ const AddNote = () => {
     setTitle("");
     setDescription(""); // ✅ Added
     setYoutubeLinks(""); // ✅ Added
-    setTestPaper(""); // ✅ Added
+
     setFiles([]);
     setEditingId(null);
   };
@@ -286,45 +282,7 @@ const AddNote = () => {
             />
           </FormControl>
 
-          <FormControl>
-  <FormLabel>Test Paper (Optional)</FormLabel>
-  <Box
-    as="label"
-    display="flex"
-    alignItems="center"
-    justifyContent="center"
-    border="2px dashed #3182ce"
-    borderRadius="md"
-    p={4}
-    cursor="pointer"
-    _hover={{ bg: "blue.50" }}
-  >
-    <Text color="blue.600" fontWeight="bold">
-      Click to upload Test Paper
-    </Text>
-    <VisuallyHiddenInput
-      type="file"
-      accept="application/pdf"
-      onChange={(e) => setTestPaper(e.target.files[0])}
-    />
-  </Box>
-  {testPaper && (
-    <Flex align="center" mt={2}>
-      <Text>{testPaper.name}</Text>
-      <IconButton
-        ml={2}
-        icon={<DeleteIcon />}
-        colorScheme="red"
-        variant="ghost"
-        background="white"
-        border="1px"
-        onClick={() => setTestPaper(null)}
-        aria-label="Delete Test Paper"
-      />
-    </Flex>
-  )}
-</FormControl>
-
+          <FormControl></FormControl>
 
           <FormControl isRequired>
             <FormLabel>Upload Files</FormLabel>
@@ -420,7 +378,6 @@ const AddNote = () => {
                 setFiles([]);
                 setDescription("");
                 setYoutubeLinks("");
-                setTestPaper("");
               }}
               ml={2} // Adds spacing between buttons
             >
@@ -467,6 +424,9 @@ const AddNote = () => {
                           onClick={() => {
                             setEditingId(note._id);
                             setTitle(note.title);
+                            setDescription(note.description || ""); // ✅ Added
+                            setYoutubeLinks(note.youtubeLinks?.join(",") || ""); // ✅ Added
+                            
                             setIsEditing(true);
                             // Ensure existing files are set in state
                             const fetchedFiles = note.files.map((file) => ({
@@ -511,28 +471,17 @@ const AddNote = () => {
 
                 {/* YouTube Links */}
                 {selectedNote.youtubeLinks &&
-                  typeof selectedNote.youtubeLinks === "string" &&
-                  selectedNote.youtubeLinks.split(",").map((link, index) => (
-                    <ListItem key={index}>
-                      <Link href={link.trim()} color="blue.500" isExternal>
-                        {link.trim()}
-                      </Link>
-                    </ListItem>
-                  ))}
-
-                {/* Test Paper */}
-                {selectedNote.testPaper && (
-                  <Box mb={4}>
-                    <Text fontWeight="bold">Test Paper:</Text>
-                    <Link
-                      href={`http://localhost:5000/${selectedNote.testPaper}`}
-                      color="blue.500"
-                      isExternal
-                    >
-                      View Test Paper
-                    </Link>
-                  </Box>
-                )}
+                  selectedNote.youtubeLinks.length > 0 && (
+                    <List spacing={2}>
+                      {selectedNote.youtubeLinks.map((link, index) => (
+                        <ListItem key={index}>
+                          <Link href={link.trim()} color="blue.500" isExternal>
+                            {link.trim()}
+                          </Link>
+                        </ListItem>
+                      ))}
+                    </List>
+                  )}
 
                 {/* Files Table */}
                 <Table variant="simple">
