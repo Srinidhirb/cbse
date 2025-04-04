@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@chakra-ui/react"; // Import Chakra toast
 import Nav from "../components/Nav";
 import LoginSlider from "../components/LoginSlider";
-
+import { useAuth } from "../context/AuthContext"; // 👈 import
 const sendOTPRequest = async (email) => {
   const response = await fetch("http://localhost:5000/send-otp", {
     method: "POST",
@@ -20,7 +20,6 @@ const sendOTPRequest = async (email) => {
 
   return data; // Return the success response
 };
-
 
 const verifyOTPRequest = async ({ email, otp }) => {
   const response = await fetch("http://localhost:5000/verify-otp", {
@@ -41,7 +40,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [loading, setLoading] = useState(false);
-
+  const { login } = useAuth();
   const toast = useToast(); // Initialize Chakra toast
   const navigate = useNavigate(); // Initialize navigation
 
@@ -49,32 +48,32 @@ const Login = () => {
     mutationFn: sendOTPRequest,
     onSuccess: (data) => {
       setLoading(false);
-      
+
       toast({
         title: "Success ✅",
-        description: data.message, 
+        description: data.message,
         status: "success",
         duration: 3000,
         isClosable: true,
-position: "top-right",
+        position: "top-right",
       });
-  
+
       if (data.message === "✅ OTP sent successfully") {
         setStep(2); // Move to OTP verification step only for registered users
       }
     },
     onError: (error) => {
       setLoading(false);
-      
+
       toast({
         title: "Error ❌",
-        description: error.message.includes("User not registered") 
-          ? " User not registered. Please sign up." 
-          : error.message, 
+        description: error.message.includes("User not registered")
+          ? " User not registered. Please sign up."
+          : error.message,
         status: "error",
         duration: 3000,
         isClosable: true,
-position: "top-right",
+        position: "top-right",
       });
     },
   });
@@ -82,14 +81,14 @@ position: "top-right",
   const verifyOTPMutation = useMutation({
     mutationFn: verifyOTPRequest,
     onSuccess: () => {
-      
+      login(email); // 👈 store email in context + localStorage
       toast({
         title: "Login Successful ✅",
         description: "Redirecting to homepage...",
         status: "success",
         duration: 3000,
         isClosable: true,
-position: "top-right",
+        position: "top-right",
       });
       setTimeout(() => navigate("/"), 2000);
     },
@@ -100,7 +99,7 @@ position: "top-right",
         status: "error",
         duration: 3000,
         isClosable: true,
-position: "top-right",
+        position: "top-right",
       });
     },
   });
@@ -144,7 +143,10 @@ position: "top-right",
                 Enter your Mail ID to continue your journey
               </p>
 
-              <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
+              <form
+                onSubmit={handleEmailSubmit}
+                className="flex flex-col gap-4"
+              >
                 <label className="text-lg font-medium">
                   Mail ID <span className="text-red-500">*</span>
                 </label>
@@ -206,7 +208,9 @@ position: "top-right",
               </div>
 
               <p className="text-sm text-gray-500">Verify</p>
-              <p className="text-lg font-medium">Enter the OTP sent to {email}</p>
+              <p className="text-lg font-medium">
+                Enter the OTP sent to {email}
+              </p>
 
               <div className="flex items-center justify-center gap-4">
                 {otp.map((value, index) => (

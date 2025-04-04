@@ -221,10 +221,10 @@ const userSchema = new mongoose.Schema({
 
   gender: String,
   referralId: String,
-  otp: String, // Add OTP field
-  otpExpires: Date, // Add OTP expiry field
-  referralId: String, // Referral ID entered during registration
-  userReferralId: { type: String, unique: true }, // Unique referral ID for each user
+  otp: String, 
+  otpExpires: Date, 
+  referralId: String, 
+  userReferralId: { type: String, unique: true }, 
 });
 
 const generateReferralId = async () => {
@@ -250,7 +250,7 @@ const transporter = nodemailer.createTransport({
     pass: "dzqk ayed kexw udnf",
   },
 });
-const generateOTP = () => Math.floor(1000 + Math.random() * 9000).toString();
+
 
 app.post("/register", async (req, res) => {
   try {
@@ -308,9 +308,9 @@ const sendOTPEmail = async (email, otp) => {
     };
 
     await transporter.sendMail(mailOptions);
-    console.log(`✅ OTP sent successfully to ${email}`);
+   
   } catch (error) {
-    console.error("❌ Error sending email:", error);
+    
     throw new Error("Failed to send OTP email");
   }
 };
@@ -328,20 +328,20 @@ app.post("/send-otp", async (req, res) => {
 
 
     if (!user) {
-      // Explicitly tell the user to register
+      
       return res.status(400).json({ error: "❌ User not registered. Please sign up." });
     }
 
-    // Generate OTP
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
-    const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // OTP valid for 5 minutes
 
-    // Update existing user with OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const otpExpires = new Date(Date.now() + 5 * 60 * 1000); 
+
+  
     user.otp = otp;
     user.otpExpires = otpExpires;
     await user.save();
 
-    // ✅ Call sendOTPEmail function
+    
     await sendOTPEmail(email, otp);
 
     res.status(200).json({ message: "✅ OTP sent successfully" });
@@ -356,24 +356,24 @@ app.post("/verify-otp", async (req, res) => {
   const { email, otp } = req.body;
 
   try {
-    // 🔥 FIX: Query by `emailAddress`, not `email`
+  
     const user = await User.findOne({ emailAddress: email });
 
     if (!user) {
       return res.status(400).json({ error: "❌ User not found" });
     }
 
-    // 🔥 FIX: Convert OTP to string before comparing
+    
     if (user.otp !== otp.toString()) {
       return res.status(400).json({ error: "❌ Invalid OTP" });
     }
 
-    // 🔥 FIX: Ensure `otpExpires` is a valid Date object
+    
     if (new Date() > new Date(user.otpExpires)) {
       return res.status(400).json({ error: "❌ OTP has expired" });
     }
 
-    // ✅ Clear OTP after successful verification
+    
     user.otp = null;
     user.otpExpires = null;
     await user.save();
@@ -389,7 +389,7 @@ app.get("/users", async (req, res) => {
   try {
     const users = await User.find({});
 
-    // Map: referralId => user who owns it
+    
     const referralOwnerMap = {};
     users.forEach(user => {
       if (user.userReferralId) {
@@ -397,7 +397,7 @@ app.get("/users", async (req, res) => {
       }
     });
 
-    // Map: userFullName => list of names who used their referral
+    
     const referralUsageMap = {};
     users.forEach(user => {
       const referredBy = user.referralId;
@@ -410,7 +410,7 @@ app.get("/users", async (req, res) => {
       }
     });
 
-    // Attach referral usage info to each user
+    
     const updatedUsers = users.map(user => {
       const usedBy = referralUsageMap[user.fullName] || [];
       return {
@@ -431,7 +431,7 @@ app.get("/referral-usage", async (req, res) => {
     const users = await User.find({});
     const referralUsage = {};
 
-    // Step 1: Map each user's referral code to their name
+    
     const referralCodeToUserMap = {};
     users.forEach(user => {
       if (user.userReferralId) {
@@ -439,7 +439,7 @@ app.get("/referral-usage", async (req, res) => {
       }
     });
 
-    // Step 2: Check who used whose referral code
+    
     users.forEach(user => {
       if (user.referralId && referralCodeToUserMap[user.referralId]) {
         const referrerName = referralCodeToUserMap[user.referralId];
@@ -459,9 +459,21 @@ app.get("/referral-usage", async (req, res) => {
   }
 });
 
+app.get("/user/:email", async (req, res) => {
+  try {
+    const user = await User.findOne({ emailAddress: req.params.email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+    
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+});
 
 
 
 
-// Start Server
 app.listen(5000, () => console.log("🚀 Server running on port 5000"));
