@@ -10,7 +10,9 @@ import Courses from "./pages/Courses";
 import Admin from "./admin/home";
 import Content from "./admin/Content";
 import AddNote from "./admin/AddNote";
+
 import NoteDetail  from "./pages/NoteDetail";
+import Users from "./admin/users";
 
 function App() {
   return (
@@ -24,6 +26,7 @@ function App() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/content" element={<Content />} />
           <Route path="/admin/AddNote" element={<AddNote />} />
+          <Route path="/admin/users" element={<Users />} />
           <Route path="/note/:category/:id" element={<NoteDetail />} />
         </Routes>
       </Router>

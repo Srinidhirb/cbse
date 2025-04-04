@@ -218,14 +218,28 @@ const userSchema = new mongoose.Schema({
   emailAddress: { type: String, required: true, unique: true },
   password: String,
   phoneNumber: String,
-  dateOfBirth: String,
+
   gender: String,
   referralId: String,
   otp: String, // Add OTP field
   otpExpires: Date, // Add OTP expiry field
+  referralId: String, // Referral ID entered during registration
+  userReferralId: { type: String, unique: true }, // Unique referral ID for each user
 });
 
+const generateReferralId = async () => {
+  let userReferralId;
+  let isUnique = false;
 
+  while (!isUnique) {
+    userReferralId = "REF-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+    const existingUser = await User.findOne({ userReferralId });
+    if (!existingUser) {
+      isUnique = true;
+    }
+  }
+  return userReferralId;
+};
 const User = mongoose.model("User", userSchema);
 
 
@@ -240,7 +254,7 @@ const generateOTP = () => Math.floor(1000 + Math.random() * 9000).toString();
 
 app.post("/register", async (req, res) => {
   try {
-    const { fullName, emailAddress, password, phoneNumber, dateOfBirth, gender, referralId } = req.body;
+    const { fullName, emailAddress, password, phoneNumber, gender, referralId } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ emailAddress });
@@ -248,8 +262,11 @@ app.post("/register", async (req, res) => {
       return res.status(400).json({ error: "❌ Email already registered" });
     }
 
-    // Hash the password
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Generate a unique user referral ID
+    const userReferralId = await generateReferralId();
 
     // Create new user
     const newUser = new User({
@@ -257,17 +274,29 @@ app.post("/register", async (req, res) => {
       emailAddress,
       password: hashedPassword,
       phoneNumber,
-      dateOfBirth,
       gender,
-      referralId,
+      referralId,  // This is the referral ID used by the user while registering
+      userReferralId, // This is the unique referral ID assigned to the user
     });
 
     await newUser.save();
-    res.status(201).json({ message: "✅ User registered successfully", data: newUser });
+
+    res.status(201).json({
+      message: "✅ User registered successfully",
+      data: {
+        fullName: newUser.fullName,
+        emailAddress: newUser.emailAddress,
+        phoneNumber: newUser.phoneNumber,
+        gender: newUser.gender,
+        referralId: newUser.referralId,
+        userReferralId: newUser.userReferralId, // Return generated referral ID
+      },
+    });
   } catch (error) {
     res.status(500).json({ error: "❌ Error registering user" });
   }
 });
+
 
 const sendOTPEmail = async (email, otp) => {
   try {
@@ -297,7 +326,7 @@ app.post("/send-otp", async (req, res) => {
   try {
     let user = await User.findOne({ emailAddress: email });
 
-    
+
     if (!user) {
       // Explicitly tell the user to register
       return res.status(400).json({ error: "❌ User not registered. Please sign up." });
@@ -356,6 +385,79 @@ app.post("/verify-otp", async (req, res) => {
   }
 });
 
+app.get("/users", async (req, res) => {
+  try {
+    const users = await User.find({});
+
+    // Map: referralId => user who owns it
+    const referralOwnerMap = {};
+    users.forEach(user => {
+      if (user.userReferralId) {
+        referralOwnerMap[user.userReferralId] = user.fullName;
+      }
+    });
+
+    // Map: userFullName => list of names who used their referral
+    const referralUsageMap = {};
+    users.forEach(user => {
+      const referredBy = user.referralId;
+      if (referredBy && referralOwnerMap[referredBy]) {
+        const referrer = referralOwnerMap[referredBy];
+        if (!referralUsageMap[referrer]) {
+          referralUsageMap[referrer] = [];
+        }
+        referralUsageMap[referrer].push(user.fullName);
+      }
+    });
+
+    // Attach referral usage info to each user
+    const updatedUsers = users.map(user => {
+      const usedBy = referralUsageMap[user.fullName] || [];
+      return {
+        ...user._doc,
+        usedBy: usedBy.length > 0 ? usedBy : ["Not Used"],
+      };
+    });
+
+    res.json(updatedUsers);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch users" });
+  }
+});
+
+app.get("/referral-usage", async (req, res) => {
+  try {
+    const users = await User.find({});
+    const referralUsage = {};
+
+    // Step 1: Map each user's referral code to their name
+    const referralCodeToUserMap = {};
+    users.forEach(user => {
+      if (user.userReferralId) {
+        referralCodeToUserMap[user.userReferralId] = user.fullName;
+      }
+    });
+
+    // Step 2: Check who used whose referral code
+    users.forEach(user => {
+      if (user.referralId && referralCodeToUserMap[user.referralId]) {
+        const referrerName = referralCodeToUserMap[user.referralId];
+
+        if (!referralUsage[referrerName]) {
+          referralUsage[referrerName] = [];
+        }
+
+        referralUsage[referrerName].push(user.fullName);
+      }
+    });
+
+    res.json(referralUsage);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to build referral usage map" });
+  }
+});
 
 
 
