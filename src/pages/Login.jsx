@@ -120,10 +120,11 @@ const Login = () => {
   return (
     <>
       <Nav />
-      <div className="flex justify-evenly items-center min-h-[80vh]">
+      <div className="flex flex-wrap-reverse gap-8 justify-evenly items-center min-h-[80vh] overflow-hidden">
         <LoginSlider />
 
-        <div className="flex flex-col w-2/5 items-center justify-center">
+        <div className="flex flex-col w-full md:w-2/5 items-center justify-center">
+
           <h1 className="text-2xl font-bold mb-6">Login</h1>
           <p className="text-center text-gray-600 mb-6">Welcome to</p>
 
@@ -139,7 +140,7 @@ const Login = () => {
                 </div>
               </div>
 
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-center text-gray-500">
                 Enter your Mail ID to continue your journey
               </p>
 
@@ -223,7 +224,23 @@ const Login = () => {
                       const newOtp = [...otp];
                       newOtp[index] = e.target.value;
                       setOtp(newOtp);
+
+                      if (e.target.value && index < otp.length - 1) {
+                        const nextInput = document.getElementById(
+                          `otp-${index + 1}`
+                        );
+                        nextInput?.focus();
+                      }
                     }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Backspace" && !otp[index] && index > 0) {
+                        const prevInput = document.getElementById(
+                          `otp-${index - 1}`
+                        );
+                        prevInput?.focus();
+                      }
+                    }}
+                    id={`otp-${index}`}
                     className="border border-gray-300 rounded-md p-2 w-12 text-center"
                   />
                 ))}

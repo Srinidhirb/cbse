@@ -45,20 +45,23 @@ function Courses() {
     <>
       <Nav />
       <div
-        className="bg-cover bg-center h-[60vh] w-full flex items-center justify-start pl-32"
-        style={{ backgroundImage: `url(${Bg})` }}
-      >
-        <h1 className="text-white text-3xl font-bold">Courses Offered</h1>
-      </div>
-      <div className="flex flex-col w-full my-8 m-auto max-w-7xl gap-4">
-        <span className="font-medium text-2xl tracking-wider leading-9">
-          Explore Our CBSE Courses for 8th to 10th Grade <br />
-          Our CBSE courses for 8th to 10th grade offer a comprehensive learning
-          experience, combining expertly crafted content with interactive
-          resources to help students understand key concepts and excel in their
-          studies.
-        </span>
-      </div>
+  className="bg-cover bg-center h-[40vh] md:h-[60vh] w-full flex items-center justify-start px-4 md:px-32"
+  style={{ backgroundImage: `url(${Bg})` }}
+>
+  <h1 className="text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">
+    Courses Offered
+  </h1>
+</div>
+
+<div className="flex flex-col w-full my-8 mx-auto max-w-7xl px-4 gap-4 text-gray-800">
+  <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-medium tracking-wide leading-relaxed">
+    Explore Our CBSE Courses for 8th to 10th Grade <br />
+    Our CBSE courses for 8th to 10th grade offer a comprehensive learning
+    experience, combining expertly crafted content with interactive resources
+    to help students understand key concepts and excel in their studies.
+  </span>
+</div>
+
       <CoursesSlider />
       <div className="p-4 max-w-7xl my-8 mx-auto">
         {/* Science Courses */}

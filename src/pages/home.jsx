@@ -11,66 +11,40 @@ import CardCarousel from "../components/CardCarousel";
 import Banner from "../components/Banner";
 import Footer from "../components/Footer";
 import Lottie from "react-lottie-player";
-import Experience from "../Assets/experience.json";
-import Courses from "../Assets/courses.json";
-import Success from "../Assets/success.json";
-import Students from "../Assets/students.json";
+
 import Sign from "../Assets/sign_in.json";
 import Access from "../Assets/access.json";
 import Practice from "../Assets/exam.json";
 import Result from "../Assets/result.json";
 import Loader from "../components/Loader";
 import { AnimatePresence, motion } from "framer-motion";
+import SuccessSection from "../components/SuccessSection";
 function home() {
   const [selectedStep, setSelectedStep] = useState("signup");
   const [loading, setLoading] = useState(true);
   // Function to render the image based on the selected step
   const renderStepImage = () => {
+    const commonProps = {
+      loop: true,
+      play: true,
+      onComplete: () => setShowText(true),
+      className: "w-[70%] max-w-[500px] h-auto md:h-[350px]", // responsive sizing
+    };
+
     switch (selectedStep) {
       case "signup":
-        return (
-          <Lottie
-            loop={true}
-            play
-            animationData={Sign}
-            style={{ width: 600, height: 350 }}
-            onComplete={() => setShowText(true)}
-          />
-        );
+        return <Lottie {...commonProps} animationData={Sign} />;
       case "getaccess":
-        return (
-          <Lottie
-            loop={true}
-            play
-            animationData={Access}
-            style={{ width: 600, height: 350 }}
-            onComplete={() => setShowText(true)}
-          />
-        );
+        return <Lottie {...commonProps} animationData={Access} />;
       case "practice":
-        return (
-          <Lottie
-            loop={true}
-            play
-            animationData={Practice}
-            style={{ width: 600, height: 350 }}
-            onComplete={() => setShowText(true)}
-          />
-        );
+        return <Lottie {...commonProps} animationData={Practice} />;
       case "result":
-        return (
-          <Lottie
-            loop={true}
-            play
-            animationData={Result}
-            style={{ width: 600, height: 350 }}
-            onComplete={() => setShowText(true)}
-          />
-        );
+        return <Lottie {...commonProps} animationData={Result} />;
       default:
         return null;
     }
   };
+
   useEffect(() => {
     setTimeout(() => {
       setLoading(false);
@@ -100,161 +74,119 @@ function home() {
           <div className="App bg-bgblue">
             <Nav />
             {/* Hero Section */}
-            <div className="w-full h-[90vh] flex justify-evenly items-center flex-col md:flex-row flex-wrap">
-              {/* Content */}
-              <div className="flex w-[32rem] leading-5 gap-7 flex-col">
-                <span className="text-4xl font-medium">
+            <div className="w-full min-h-[90vh] px-4 py-10 flex flex-col-reverse md:flex-row justify-center items-center ">
+              {/* Content Block */}
+              <div className="flex flex-col gap-6 max-w-md text-center md:text-left">
+                <span className="text-3xl md:text-4xl font-medium leading-snug">
                   Take{" "}
-                  <span className="text-blue-900 font-bold capitalize">
-                    student experience{" "}
-                  </span>
+                  <span className="text-blue-900 font-bold">
+                    student experience
+                  </span>{" "}
                   to the next level
                 </span>
-                <span>
+                <p className="text-sm md:text-base text-gray-700">
                   Lorem Ipsum is simply dummy text of the printing and
                   typesetting industry. Lorem Ipsum has been the industry's
                   standard dummy.
-                </span>
-                <div className="flex gap-14 items-center">
-                  <span className="py-3 h-12 px-5 rounded-2xl bg-cyan-200 cursor-pointer border border-black text-base font-semibold">
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 items-center justify-center md:justify-start">
+                  <span className="py-3 px-6 rounded-2xl bg-cyan-200 cursor-pointer border border-black font-semibold">
                     Join Now
                   </span>
-                  <img src={Suc} alt="Success illustration" />
+                  <img src={Suc} alt="Success" className="w-28 sm:w-32" />
                 </div>
               </div>
+
+              {/* Image Block */}
               <img
                 src={Hero}
-                alt="Hero illustration"
-                className="w-auto h-[75%] max-w-full"
+                alt="Hero"
+                className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg"
               />
             </div>
 
             {/* Success Section */}
-            <div className="w-full  m-auto max-w-7xl mb-14">
-              <span className="text-center text-3xl font-semibold block">
-                Our Success
-              </span>
-              <div className="flex w-full justify-center gap-14 my-11 flex-wrap">
-                <div className="border-2 border-blue-900 w-60 h-64 rounded-xl flex flex-col gap-2 items-center justify-center">
-                  <Lottie
-                    loop={true}
-                    play
-                    animationData={Students}
-                    style={{ width: 150, height: 150 }}
-                    onComplete={() => setShowText(true)}
-                  />
-                  <span className="text-3xl text-blue-900 font-bold">
-                    1000+
-                  </span>
-                  <p className="text-base font-semibold">Number of students</p>
-                </div>
-                <div className="border-2 border-blue-900 w-60 h-64 justify-center rounded-xl flex flex-col gap-2 items-center">
-                  <Lottie
-                    loop={true}
-                    play
-                    animationData={Success}
-                    style={{ width: 150, height: 150 }}
-                    onComplete={() => setShowText(true)}
-                  />
-                  <span className="text-3xl text-blue-900 font-bold">98%</span>
-                  <p className="text-base font-semibold">
-                    Percentage of success
-                  </p>
-                </div>
-                <div className="border-2 border-blue-900 w-60 h-64 justify-center rounded-xl flex flex-col gap-2 items-center">
-                  <Lottie
-                    loop={true}
-                    play
-                    animationData={Courses}
-                    style={{ width: 150, height: 150 }}
-                    onComplete={() => setShowText(true)}
-                  />
-                  <span className="text-3xl text-blue-900 font-bold">4</span>
-                  <p className="text-base font-semibold">Number of Courses</p>
-                </div>
-                <div className="border-2 border-blue-900 w-60 h-64 justify-center rounded-xl flex flex-col gap-2 items-center">
-                  <Lottie
-                    loop={true}
-                    play
-                    animationData={Experience}
-                    style={{ width: 150, height: 150 }}
-                    onComplete={() => setShowText(true)}
-                  />
-
-                  <p className="text-base font-semibold">Years of experience</p>
-                </div>
-              </div>
-            </div>
+            <SuccessSection />
 
             {/* How it works Section */}
-            <div className="w-full max-w-7xl m-auto mb-20">
-              <span className="text-center text-3xl font-semibold block mb-10">
+            <div className="w-full max-w-5xl m-auto mb-20 px-4">
+              <span className="text-center text-2xl md:text-3xl font-semibold block mb-10">
                 How it works
               </span>
-              <div className="flex justify-evenly    items-center">
-                {/* Steps Sidebar */}
-                <div className=" flex flex-col gap-4">
-                  <div
-                    className={`p-4 rounded-lg cursor-pointer ${
-                      selectedStep === "signup"
-                        ? "bg-blue-600 text-white"
-                        : "bg-white text-black"
-                    } shadow`}
-                    onClick={() => setSelectedStep("signup")}
-                  >
-                    <h3 className="text-lg font-semibold">Sign Up</h3>
-                    <p>
-                      Montes Vivamus Curve Quisque Et Primis Pretium Nullam.
-                    </p>
-                  </div>
 
-                  <div
-                    className={`p-4 rounded-lg cursor-pointer ${
-                      selectedStep === "getaccess"
-                        ? "bg-blue-600 text-white"
-                        : "bg-white text-black"
-                    } shadow`}
-                    onClick={() => setSelectedStep("getaccess")}
-                  >
-                    <h3 className="text-lg font-semibold">Get Access</h3>
-                    <p>
-                      Montes Vivamus Curve Quisque Et Primis Pretium Nullam.
-                    </p>
-                  </div>
-
-                  <div
-                    className={`p-4 rounded-lg cursor-pointer ${
-                      selectedStep === "practice"
-                        ? "bg-blue-600 text-white"
-                        : "bg-white text-black"
-                    } shadow`}
-                    onClick={() => setSelectedStep("practice")}
-                  >
-                    <h3 className="text-lg font-semibold">
-                      Practice Questions
-                    </h3>
-                    <p>
-                      Prepare for the exam with revision and tracking features.
-                    </p>
-                  </div>
-
-                  <div
-                    className={`p-4 rounded-lg cursor-pointer ${
-                      selectedStep === "result"
-                        ? "bg-blue-600 text-white"
-                        : "bg-white text-black"
-                    } shadow`}
-                    onClick={() => setSelectedStep("result")}
-                  >
-                    <h3 className="text-lg font-semibold">Get Result</h3>
-                    <p>
-                      Compare your results with peers with advanced analytics.
-                    </p>
-                  </div>
+              {/* Mobile Layout */}
+              <div className="flex flex-col items-center gap-6 lg:hidden">
+                {/* Step Buttons on Top */}
+                <div className="flex gap-3 flex-wrap justify-center">
+                  {[
+                    { key: "signup", label: "Sign Up" },
+                    { key: "getaccess", label: "Get Access" },
+                    { key: "practice", label: "Practice" },
+                    { key: "result", label: "Result" },
+                  ].map((step) => (
+                    <button
+                      key={step.key}
+                      onClick={() => setSelectedStep(step.key)}
+                      className={`px-4 py-2 rounded-full text-sm font-semibold border ${
+                        selectedStep === step.key
+                          ? "bg-blue-600 text-white"
+                          : "bg-white text-blue-600 border-blue-600"
+                      }`}
+                    >
+                      {step.label}
+                    </button>
+                  ))}
                 </div>
 
-                {/* Step Image Display */}
-                <div className=" flex justify-center items-center">
+                {/* Lottie Animation Below Buttons */}
+                <div className="w-full flex justify-center items-center">
+                  {renderStepImage()}
+                </div>
+              </div>
+
+              {/* Desktop Layout */}
+              <div className="hidden lg:flex justify-between items-start gap-12">
+                {/* Steps Sidebar */}
+                <div className="flex flex-col gap-4 w-full max-w-md">
+                  {[
+                    {
+                      key: "signup",
+                      title: "Sign Up",
+                      desc: "Montes Vivamus Curve Quisque Et Primis Pretium Nullam.",
+                    },
+                    {
+                      key: "getaccess",
+                      title: "Get Access",
+                      desc: "Montes Vivamus Curve Quisque Et Primis Pretium Nullam.",
+                    },
+                    {
+                      key: "practice",
+                      title: "Practice Questions",
+                      desc: "Prepare for the exam with revision and tracking features.",
+                    },
+                    {
+                      key: "result",
+                      title: "Get Result",
+                      desc: "Compare your results with peers with advanced analytics.",
+                    },
+                  ].map((step) => (
+                    <div
+                      key={step.key}
+                      className={`p-4 rounded-lg cursor-pointer ${
+                        selectedStep === step.key
+                          ? "bg-blue-600 text-white"
+                          : "bg-white text-black"
+                      } shadow`}
+                      onClick={() => setSelectedStep(step.key)}
+                    >
+                      <h3 className="text-lg font-semibold">{step.title}</h3>
+                      <p className="text-sm">{step.desc}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Step Image */}
+                <div className="w-full flex justify-center items-center">
                   {renderStepImage()}
                 </div>
               </div>

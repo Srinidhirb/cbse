@@ -1,11 +1,15 @@
-import React from 'react';
-import Slider from 'react-slick';
-import { useQuery } from '@tanstack/react-query';
+import React from "react";
+import Slider from "react-slick";
+import { useQuery } from "@tanstack/react-query";
 import { Spinner } from "@chakra-ui/react";
 
 const CardCarousel = () => {
   // Fetch videos from the backend
-  const { data: videos, isLoading, isError } = useQuery({
+  const {
+    data: videos,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["videos"],
     queryFn: async () => {
       const res = await fetch("http://localhost:5000/videos"); // Replace with your backend API
@@ -16,7 +20,9 @@ const CardCarousel = () => {
 
   // Function to extract video ID from YouTube URL
   const getVideoId = (url) => {
-    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|embed\/|v\/|shorts\/))([^?&\n]+)/);
+    const match = url.match(
+      /(?:youtu\.be\/|youtube\.com\/(?:.*v=|embed\/|v\/|shorts\/))([^?&\n]+)/
+    );
     return match ? match[1] : "";
   };
 
@@ -27,34 +33,50 @@ const CardCarousel = () => {
     slidesToShow: 3,
     slidesToScroll: 3,
     responsive: [
-      { breakpoint: 1024, settings: { slidesToShow: 2 } },
-      { breakpoint: 768, settings: { slidesToShow: 1 } },
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 2,
+        },
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        },
+      },
     ],
   };
-
+  
   return (
     <div className="w-full max-w-6xl mx-auto relative py-4">
-      <span className="text-center text-3xl font-semibold block mb-10">Latest Content</span>
+      <span className="text-center text-3xl font-semibold block mb-10">
+        Latest Content
+      </span>
 
       {isLoading && (
         <div className="flex items-center justify-center h-screen">
           <Spinner size="xl" color="blue.500" />
         </div>
       )}
-      {isError && <p className="text-red-500 text-center">Failed to load videos</p>}
+      {isError && (
+        <p className="text-red-500 text-center">Failed to load videos</p>
+      )}
 
       {!isLoading && !isError && videos?.length > 0 && (
         <>
           <div className="flex justify-between px-4 gap-4 mr-5 mb-4">
             <button
               className="prev-arrow bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-              onClick={() => document.querySelector('.slick-prev').click()}
+              onClick={() => document.querySelector(".slick-prev").click()}
             >
               Previous
             </button>
             <button
               className="next-arrow bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-              onClick={() => document.querySelector('.slick-next').click()}
+              onClick={() => document.querySelector(".slick-next").click()}
             >
               Next
             </button>
@@ -66,16 +88,16 @@ const CardCarousel = () => {
               return (
                 <div key={index} className="px-4">
                   <div className="bg-white shadow-lg rounded-lg mb-6 flex flex-col items-center">
-                    <iframe
-                      width="300"
-                      height="180"
-                      src={`https://www.youtube.com/embed/${videoId}`}
-                      title={`YouTube video ${index + 1}`}
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="my-4"
-                    />
+                    <div className="w-full aspect-video rounded-md overflow-hidden">
+                      <iframe
+                        src={`https://www.youtube.com/embed/${videoId}`}
+                        title={`YouTube video ${index + 1}`}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="w-full h-full"
+                      />
+                    </div>
                   </div>
                 </div>
               );

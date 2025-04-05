@@ -29,7 +29,7 @@ const Register = () => {
     confirmPassword: "",
     phoneNumber: "",
     gender: "",
-   
+
     referralId: "",
   });
 
@@ -55,9 +55,9 @@ const Register = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     let validationErrors = {};
-  
+
     // Validate required fields
     if (!formData.fullName) {
       validationErrors.fullName = true;
@@ -70,7 +70,7 @@ const Register = () => {
         position: "top-right",
       });
     }
-  
+
     if (!formData.emailAddress) {
       validationErrors.emailAddress = true;
       toast({
@@ -82,19 +82,20 @@ const Register = () => {
         position: "top-right",
       });
     }
-  
+
     if (!formData.password || !isPasswordStrong(formData.password)) {
       validationErrors.password = true;
       toast({
         title: "Weak Password",
-        description: "Password must have at least 8 characters, a number, an uppercase letter, and a special character.",
+        description:
+          "Password must have at least 8 characters, a number, an uppercase letter, and a special character.",
         status: "error",
         duration: 4000,
         isClosable: true,
         position: "top-right",
       });
     }
-  
+
     if (formData.password !== formData.confirmPassword) {
       validationErrors.confirmPassword = true;
       toast({
@@ -106,7 +107,7 @@ const Register = () => {
         position: "top-right",
       });
     }
-  
+
     if (!formData.phoneNumber) {
       validationErrors.phoneNumber = true;
       toast({
@@ -118,7 +119,7 @@ const Register = () => {
         position: "top-right",
       });
     }
-  
+
     if (!formData.gender) {
       validationErrors.gender = true;
       toast({
@@ -130,7 +131,7 @@ const Register = () => {
         position: "top-right",
       });
     }
-  
+
     if (formData.role === "student" && !formData.referralId) {
       validationErrors.referralId = true;
       toast({
@@ -142,25 +143,25 @@ const Register = () => {
         position: "top-right",
       });
     }
-  
+
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-  
+
     try {
       const response = await fetch("http://localhost:5000/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
         throw new Error(data.error || "Registration failed");
       }
-  
+
       // Notify user of successful registration
       toast({
         title: "Registration Successful",
@@ -170,7 +171,7 @@ const Register = () => {
         isClosable: true,
         position: "top-right",
       });
-  
+
       // Redirect user after a short delay
       setTimeout(() => {
         navigate("/login");
@@ -186,24 +187,30 @@ const Register = () => {
       });
     }
   };
-  
 
   return (
     <>
       <Nav />
       <Box
         display="flex"
+        flexWrap={"wrap-reverse"}
         justifyContent="space-evenly"
         alignItems="center"
         minH="80vh"
+        overflow={"hidden"}
       >
         <LoginSlider />
-        <VStack spacing={4} w="45%" p={6} borderRadius="md">
+        <VStack
+          spacing={4}
+          w={{ base: "100%", md: "45%" }}
+          p={{ base: 4, md: 6 }}
+          borderRadius="md"
+        >
           <Heading size="lg">Sign Up</Heading>
           <Text color="gray.600">Let's get started</Text>
 
           <form onSubmit={handleSubmit} style={{ width: "100%" }}>
-            <SimpleGrid columns={2} spacing={4} width="100%">
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} width="100%">
               <FormControl isInvalid={errors.fullName}>
                 <FormLabel>Full Name</FormLabel>
                 <Input
@@ -280,21 +287,16 @@ const Register = () => {
                 </Select>
               </FormControl>
 
-              
-
-              
-                <FormControl isInvalid={errors.referralId}>
-                  <FormLabel>Referral ID</FormLabel>
-                  <Input
-                    type="text"
-                    name="referralId"
-                    placeholder="Referral ID"
-                    borderColor={errors.referralId ? "red.500" : "gray.300"}
-                    onChange={handleInputChange}
-                   
-                  />
-                </FormControl>
-             
+              <FormControl isInvalid={errors.referralId}>
+                <FormLabel>Referral ID</FormLabel>
+                <Input
+                  type="text"
+                  name="referralId"
+                  placeholder="Referral ID"
+                  borderColor={errors.referralId ? "red.500" : "gray.300"}
+                  onChange={handleInputChange}
+                />
+              </FormControl>
             </SimpleGrid>
 
             <Button type="submit" colorScheme="blue" width="100%" mt={4}>
