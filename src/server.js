@@ -189,10 +189,24 @@ app.put("/updateNote/:category/:id", upload.array("files", 5), async (req, res) 
   }
 });
 
+app.get("/notes/:category/random", async (req, res) => {
+  try {
+    const { category } = req.params;
+    const Model = getModel(category);
+    if (!Model) return res.status(400).json({ error: "❌ Invalid category" });
+
+    const randomNotes = await Model.aggregate([{ $sample: { size: 12 } }]);
+
+    // Add the category to each note before sending
+    const withCategory = randomNotes.map(note => ({ ...note, category }));
+
+    res.status(200).json(withCategory);
+  } catch (error) {
+    res.status(500).json({ error: "❌ Error fetching random notes" });
+  }
+});
 
 
-
-// ✅ API Route - Delete Note
 app.delete("/deleteNote/:category/:id", async (req, res) => {
   try {
     const { category, id } = req.params;
@@ -221,10 +235,10 @@ const userSchema = new mongoose.Schema({
 
   gender: String,
   referralId: String,
-  otp: String, 
-  otpExpires: Date, 
-  referralId: String, 
-  userReferralId: { type: String, unique: true }, 
+  otp: String,
+  otpExpires: Date,
+  referralId: String,
+  userReferralId: { type: String, unique: true },
 });
 
 const generateReferralId = async () => {
@@ -308,9 +322,9 @@ const sendOTPEmail = async (email, otp) => {
     };
 
     await transporter.sendMail(mailOptions);
-   
+
   } catch (error) {
-    
+
     throw new Error("Failed to send OTP email");
   }
 };
@@ -328,20 +342,20 @@ app.post("/send-otp", async (req, res) => {
 
 
     if (!user) {
-      
+
       return res.status(400).json({ error: "❌ User not registered. Please sign up." });
     }
 
 
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
-    const otpExpires = new Date(Date.now() + 5 * 60 * 1000); 
+    const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
 
-  
+
     user.otp = otp;
     user.otpExpires = otpExpires;
     await user.save();
 
-    
+
     await sendOTPEmail(email, otp);
 
     res.status(200).json({ message: "✅ OTP sent successfully" });
@@ -356,24 +370,24 @@ app.post("/verify-otp", async (req, res) => {
   const { email, otp } = req.body;
 
   try {
-  
+
     const user = await User.findOne({ emailAddress: email });
 
     if (!user) {
       return res.status(400).json({ error: "❌ User not found" });
     }
 
-    
+
     if (user.otp !== otp.toString()) {
       return res.status(400).json({ error: "❌ Invalid OTP" });
     }
 
-    
+
     if (new Date() > new Date(user.otpExpires)) {
       return res.status(400).json({ error: "❌ OTP has expired" });
     }
 
-    
+
     user.otp = null;
     user.otpExpires = null;
     await user.save();
@@ -389,7 +403,7 @@ app.get("/users", async (req, res) => {
   try {
     const users = await User.find({});
 
-    
+
     const referralOwnerMap = {};
     users.forEach(user => {
       if (user.userReferralId) {
@@ -397,7 +411,7 @@ app.get("/users", async (req, res) => {
       }
     });
 
-    
+
     const referralUsageMap = {};
     users.forEach(user => {
       const referredBy = user.referralId;
@@ -410,7 +424,7 @@ app.get("/users", async (req, res) => {
       }
     });
 
-    
+
     const updatedUsers = users.map(user => {
       const usedBy = referralUsageMap[user.fullName] || [];
       return {
@@ -431,7 +445,7 @@ app.get("/referral-usage", async (req, res) => {
     const users = await User.find({});
     const referralUsage = {};
 
-    
+
     const referralCodeToUserMap = {};
     users.forEach(user => {
       if (user.userReferralId) {
@@ -439,7 +453,7 @@ app.get("/referral-usage", async (req, res) => {
       }
     });
 
-    
+
     users.forEach(user => {
       if (user.referralId && referralCodeToUserMap[user.referralId]) {
         const referrerName = referralCodeToUserMap[user.referralId];
@@ -467,7 +481,7 @@ app.get("/user/:email", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     res.json(user);
-    
+
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
   }
