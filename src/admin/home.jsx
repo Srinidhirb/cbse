@@ -52,9 +52,20 @@ function Home() {
           <div className="bg-gray-100 p-4 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold mb-2">System Settings</h2>
             <p className="text-gray-600">
-              Configure system preferences and security settings.
+            Question Papers
             </p>
             <Link to="/admin/settings">
+              <button className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                Open Settings
+              </button>
+            </Link>
+          </div>
+          <div className="bg-gray-100 p-4 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-2">System Settings</h2>
+            <p className="text-gray-600">
+              Configure system preferences and security settings.
+            </p>
+            <Link to="/admin/question-paper/upload">
               <button className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
                 Open Settings
               </button>

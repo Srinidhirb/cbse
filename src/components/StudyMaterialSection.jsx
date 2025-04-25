@@ -14,6 +14,12 @@ import {
   ModalHeader,
   ModalCloseButton,
   ModalBody,
+  AlertDialog,
+  AlertDialogOverlay,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogBody,
+  AlertDialogFooter,
 } from "@chakra-ui/react";
 import { ChevronRightIcon } from "@chakra-ui/icons";
 import { useState } from "react";
@@ -23,12 +29,21 @@ import Videos from "../Assets/video.json";
 import Exam from "../Assets/ExamAni.json";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-const StudyMaterialSection = ({ youtubeLinks = [], attachments = [] }) => {
+import { useRef } from "react";
+const StudyMaterialSection = ({
+  youtubeLinks = [],
+  attachments = [],
+  isLoggedIn,
+  chapter,
+}) => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [activeLabel, setActiveLabel] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
+  const cancelRef = useRef();
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [previewRestricted, setPreviewRestricted] = useState(false);
   const navigate = useNavigate();
+
   const {
     isOpen: isMainModalOpen,
     onOpen: onMainModalOpen,
@@ -51,14 +66,50 @@ const StudyMaterialSection = ({ youtubeLinks = [], attachments = [] }) => {
     setActiveLabel(label);
     onMainModalOpen();
   };
+  const handleYouTubeLink = (link) => {
+    const regex =
+      /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+|(?:v|e(?:mbed)?)\/([a-zA-Z0-9_-]+)|(?:watch\?v=|.*[\/=])([a-zA-Z0-9_-]+))|youtu\.be\/([a-zA-Z0-9_-]+))/;
+    const match = link.match(regex);
 
-  const handleItemClick = (item) => {
-    setSelectedItem(item);
-    onDetailModalOpen();
+    if (match) {
+      const videoId = match[1] || match[2] || match[3]; // Extract the video ID
+      return `https://www.youtube.com/embed/${videoId}`;
+    } else {
+      console.error("Invalid YouTube URL");
+      return null; // Handle invalid link scenario
+    }
   };
 
+  const handleItemClick = (item) => {
+    if (!isLoggedIn) {
+      setShowLoginPrompt(true);
+      setSelectedItem(item); // Save to open after "Continue"
+    } else {
+      if (activeLabel === "Videos" && item) {
+        const videoUrl = handleYouTubeLink(item); // Process the YouTube URL
+        setSelectedItem(videoUrl); // Set the processed video URL
+      } else {
+        setSelectedItem(item);
+      }
+      onDetailModalOpen();
+    }
+  };
+  const handleIframeLoad = () => {
+    const iframe = iframeRef.current;
+    const maxHeight = 800; // Set your desired maximum height for scrolling
+    iframe.contentWindow.document.addEventListener("scroll", () => {
+      if (iframe.contentWindow.document.documentElement.scrollTop > maxHeight) {
+        iframe.contentWindow.document.body.style.overflow = "hidden"; // Disable further scrolling
+      }
+    });
+  };
   const renderContentPreview = () => {
+    if (!selectedItem) {
+      return <Text>No content selected.</Text>;
+    }
+
     if (activeLabel === "Videos") {
+      // Check if it's a valid YouTube URL and embed it
       return (
         <Box
           as="iframe"
@@ -66,18 +117,29 @@ const StudyMaterialSection = ({ youtubeLinks = [], attachments = [] }) => {
           width="100%"
           height="400px"
           title="Video"
+          frameBorder="0"
+          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
         />
       );
     }
 
     if (activeLabel === "Notes") {
+      const previewSrc = previewRestricted
+        ? `https://mozilla.github.io/pdf.js/web/viewer.html?file=http://localhost:5000/${selectedItem}#page=1&zoom=page-fit`
+        : `https://mozilla.github.io/pdf.js/web/viewer.html?file=http://localhost:5000/${selectedItem}#page=1`;
+
       return (
         <Box
           as="iframe"
-          src={`http://localhost:5000/${selectedItem}`}
+          src={previewSrc}
           width="100%"
-          height="600px"
+          height="800px"
           title="PDF"
+          onLoad={handleIframeLoad}
+          style={{
+            pointerEvents: isLoggedIn ? "auto" : "none", // Disables any interaction when not logged in
+          }}
         />
       );
     }
@@ -120,13 +182,15 @@ const StudyMaterialSection = ({ youtubeLinks = [], attachments = [] }) => {
 
     fetchNotes();
   }, []);
+  console.log("Selected Item:", selectedItem);
 
   return (
     <Box mt="6">
       <Flex
         direction={["column", null, "row"]}
         gap={12}
-        align="flex-end"
+
+        align="flex-start"
         flexWrap="wrap"
       >
         <Box flex="1" minW={["90%", null, "60%"]}>
@@ -167,7 +231,7 @@ const StudyMaterialSection = ({ youtubeLinks = [], attachments = [] }) => {
               </VStack>
             ))}
           </HStack>
-          
+
           <Text fontSize="lg" fontWeight="medium" mb={4}>
             Related Links
           </Text>
@@ -187,7 +251,7 @@ const StudyMaterialSection = ({ youtubeLinks = [], attachments = [] }) => {
         </Box>
 
         {/* Right Side Panel */}
-        {/* <VStack
+        <VStack
           spacing={6}
           align="stretch"
           flex="1"
@@ -235,37 +299,53 @@ const StudyMaterialSection = ({ youtubeLinks = [], attachments = [] }) => {
                 ))}
             </List>
           </Box>
-        </VStack> */}
+        </VStack>
       </Flex>
 
-     
       <Modal
         isOpen={isMainModalOpen}
         onClose={onMainModalClose}
         isCentered
-        size="2xl"
+        size="6xl"
+        
       >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>{activeLabel} </ModalHeader>
           <ModalCloseButton />
-          <ModalBody pb={6}>
-            <VStack spacing={4}>
+          <ModalBody pb={6} className="flex items-start">
+            <VStack spacing={4} >
               {getItems().length > 0 ? (
-                <VStack spacing={4}>
-                  {getItems().map((item, idx) => (
-                    <Button
-                      key={idx}
-                      onClick={() => handleItemClick(item)}
-                      colorScheme="blue"
-                      w="100%"
-                    >
-                      {activeLabel === "Notes" ? item.split("/").pop() : item}
-                    </Button>
-                  ))}
-                </VStack>
+                <HStack spacing={4}  flexWrap="wrap">
+                  {getItems().map((item, idx) =>
+                    activeLabel === "Videos" ? (
+                      <div className="flex gap-4 flex-wrap justify-start items-start">
+                        <Button
+                          key={idx}
+                          as="a"
+                          href={item}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          colorScheme="teal"
+                          w="100%"
+                        >
+                         {chapter} Video {idx + 1}
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        key={idx}
+                        onClick={() => handleItemClick(item)}
+                        colorScheme="blue"
+                        w="100%"
+                      >
+                       {chapter} Notes {idx + 1}
+                      </Button>
+                    )
+                  )}
+                </HStack>
               ) : (
-                <Text textAlign="center" fontSize="lg" color="gray.500">
+                <Text textAlign="center"  fontSize="lg" color="gray.500">
                   🚧 Coming Soon 🚧
                 </Text>
               )}
@@ -279,7 +359,8 @@ const StudyMaterialSection = ({ youtubeLinks = [], attachments = [] }) => {
         isOpen={isDetailModalOpen}
         onClose={onDetailModalClose}
         isCentered
-        size="6xl"
+        size="full"
+        className={isLoggedIn ? "" : "no-scroll-modal"}
       >
         <ModalOverlay />
         <ModalContent>
@@ -288,6 +369,41 @@ const StudyMaterialSection = ({ youtubeLinks = [], attachments = [] }) => {
           <ModalBody>{renderContentPreview()}</ModalBody>
         </ModalContent>
       </Modal>
+      <AlertDialog
+        isOpen={showLoginPrompt}
+        leastDestructiveRef={cancelRef}
+        onClose={() => setShowLoginPrompt(false)}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader>Login Required</AlertDialogHeader>
+            <AlertDialogBody>
+              These contents are only accessible when logged in.
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button
+                ref={cancelRef}
+                onClick={() => {
+                  setPreviewRestricted(true);
+                  setShowLoginPrompt(false);
+                  if (selectedItem) {
+                    onDetailModalOpen();
+                  }
+                }}
+              >
+                Continue with Limited Access
+              </Button>
+              <Button
+                colorScheme="blue"
+                ml={3}
+                onClick={() => navigate("/login")}
+              >
+                Login
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Box>
   );
 };

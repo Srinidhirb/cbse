@@ -1,16 +1,32 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { Box, Text } from "@chakra-ui/react";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  Box,
+  Text,
+  AlertDialog,
+  AlertDialogOverlay,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogBody,
+  AlertDialogFooter,
+  Button,
+} from "@chakra-ui/react";
 import StudyMaterialSection from "../components/StudyMaterialSection";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import Loader from "../components/Loader";
+import { useAuth } from "../context/AuthContext";
 
 const NoteDetail = () => {
   const { category, id } = useParams();
+  const { userEmail } = useAuth();
   const [note, setNote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
+  const [allowAccess, setAllowAccess] = useState(false);
+  const cancelRef = useRef();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchNote = async () => {
@@ -21,6 +37,12 @@ const NoteDetail = () => {
         if (!response.ok) throw new Error("Failed to fetch note");
         const data = await response.json();
         setNote(data);
+
+        if (!userEmail) {
+          setShowAlert(true);
+        } else {
+          setAllowAccess(true); // user is logged in
+        }
       } catch (err) {
         setError("Error fetching note details.");
       } finally {
@@ -29,7 +51,17 @@ const NoteDetail = () => {
     };
 
     fetchNote();
-  }, [category, id]);
+  }, [category, id, userEmail]);
+
+  const handleLoginRedirect = () => {
+    setShowAlert(false);
+    navigate("/login");
+  };
+
+  const handleContinue = () => {
+    setShowAlert(false);
+    setAllowAccess(false); // continue without login
+  };
 
   if (loading) return <Loader />;
   if (error) return <p>{error}</p>;
@@ -56,13 +88,43 @@ const NoteDetail = () => {
           {note.description}
         </Text>
 
-        {/* StudyMaterialSection with props */}
+        {/* StudyMaterialSection with login check prop */}
         <StudyMaterialSection
           youtubeLinks={note.youtubeLinks}
           attachments={note.files}
+          chapter={note.title}
+          isLoggedIn={userEmail || allowAccess}
         />
       </Box>
       <Footer />
+
+      {/* Alert Dialog for login prompt */}
+      <AlertDialog
+        isOpen={showAlert}
+        leastDestructiveRef={cancelRef}
+        onClose={() => setShowAlert(false)}
+        isCentered
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Login Required
+            </AlertDialogHeader>
+            <AlertDialogBody>
+              These contents are only accessible when logged in. Please login
+              or continue with limited access.
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={handleContinue}>
+                Continue
+              </Button>
+              <Button colorScheme="blue" onClick={handleLoginRedirect} ml={3}>
+                Login
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </>
   );
 };

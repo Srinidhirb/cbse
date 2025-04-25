@@ -2,8 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
-// Define admin email(s)
-const ADMIN_EMAILS = ["srinidhirbharadwaj@gmail.com"]; // Replace with your actual admin email(s)
+const ADMIN_EMAILS = ["srinidhirbharadwaj@gmail.com"]; 
 
 export const AuthProvider = ({ children }) => {
   const [userEmail, setUserEmail] = useState(() => {
@@ -25,7 +24,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("userEmail");
   };
 
-  const isAdmin = ADMIN_EMAILS.includes(userEmail); // ✅ check against allowed admin emails
+  const isAdmin = ADMIN_EMAILS.includes(userEmail);
 
   return (
     <AuthContext.Provider value={{ userEmail, isAdmin, login, logout }}>

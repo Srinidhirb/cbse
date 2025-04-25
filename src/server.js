@@ -487,7 +487,61 @@ app.get("/user/:email", async (req, res) => {
   }
 });
 
+const questionPaperSchema = new mongoose.Schema({
+  name: String,
+  file: String,
+  category: String,  // Added category field
+});
 
+const QuestionPaper = mongoose.model("QuestionPaper", questionPaperSchema);
+
+// Upload route to include category
+app.post("/upload-question-paper", upload.single("file"), async (req, res) => {
+  try {
+    const { name, category } = req.body;  // Get category from request body
+    const filePath = req.file.path;
+
+    // Create new question paper with category
+    const newPaper = new QuestionPaper({ name, file: filePath, category });
+    await newPaper.save();
+
+    res.status(201).json({ message: "✅ Question paper uploaded", data: newPaper });
+  } catch (error) {
+    console.error("❌ Upload failed:", error);
+    res.status(500).json({ error: "❌ Failed to upload question paper" });
+  }
+});
+
+// Fetch route to get all papers, optionally filter by category
+app.get("/question-papers", async (req, res) => {
+  try {
+    // Optionally filter by category if the query parameter is provided
+    const category = req.query.category;  
+    const filter = category ? { category } : {};  // If category is provided, filter by it
+
+    const papers = await QuestionPaper.find(filter);
+    res.status(200).json(papers);
+  } catch (error) {
+    res.status(500).json({ error: "❌ Error fetching question papers" });
+  }
+});
+app.delete("/delete-question-paper/:paperId", async (req, res) => {
+  try {
+    const { paperId } = req.params; // Extract paperId from URL parameters
+
+    // Find and delete the paper by its ID
+    const deletedPaper = await QuestionPaper.findByIdAndDelete(paperId);
+
+    if (!deletedPaper) {
+      return res.status(404).json({ error: "❌ Paper not found" });
+    }
+
+    res.status(200).json({ message: "✅ Paper deleted successfully", data: deletedPaper });
+  } catch (error) {
+    console.error("❌ Error deleting paper:", error);
+    res.status(500).json({ error: "❌ Error deleting paper" });
+  }
+});
 
 
 app.listen(5000, () => console.log("🚀 Server running on port 5000"));

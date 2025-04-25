@@ -18,6 +18,8 @@ import Admin from "./admin/home";
 import Content from "./admin/Content";
 import AddNote from "./admin/AddNote";
 import Users from "./admin/users";
+import QuestionPaperUpload from "./admin/QuestionPaperUpload"; // ✅ new
+
 
 // Route Guards
 import PrivateRoute from "./components/PrivateRoute";
@@ -79,6 +81,16 @@ function App() {
             </AdminRoute>
           }
         />
+        {/* ✅ New Routes for Question Papers */}
+        <Route
+          path="/admin/question-paper/upload"
+          element={
+            <AdminRoute>
+              <QuestionPaperUpload />
+            </AdminRoute>
+          }
+        />
+        
       </Routes>
     </Router>
   );
