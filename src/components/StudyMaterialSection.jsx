@@ -27,6 +27,8 @@ import Lottie from "react-lottie-player";
 import Notes from "../Assets/notes.json";
 import Videos from "../Assets/video.json";
 import Exam from "../Assets/ExamAni.json";
+
+import comingSoonAnimation from "../assets/soon.json"; // Adjust path as needed
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
@@ -313,7 +315,7 @@ const StudyMaterialSection = ({
         <ModalContent>
           <ModalHeader>{activeLabel} </ModalHeader>
           <ModalCloseButton />
-          <ModalBody pb={6} className="flex items-start">
+          <ModalBody pb={6} className="flex items-center justify-center">
             <VStack spacing={4} >
               {getItems().length > 0 ? (
                 <HStack spacing={4}  flexWrap="wrap">
@@ -345,9 +347,16 @@ const StudyMaterialSection = ({
                   )}
                 </HStack>
               ) : (
-                <Text textAlign="center"  fontSize="lg" color="gray.500">
-                  🚧 Coming Soon 🚧
-                </Text>
+                <div className="flex justify-center items-center">
+                <Lottie
+                        loop
+                        animationData={comingSoonAnimation}
+                        play
+                        style={{ width: 200, height: 200 }}
+                        justifyContent="center"
+                        alignItems="center"
+                      />
+                      </div>
               )}
             </VStack>
           </ModalBody>
@@ -359,7 +368,7 @@ const StudyMaterialSection = ({
         isOpen={isDetailModalOpen}
         onClose={onDetailModalClose}
         isCentered
-        size="full"
+        size="2xl"
         className={isLoggedIn ? "" : "no-scroll-modal"}
       >
         <ModalOverlay />

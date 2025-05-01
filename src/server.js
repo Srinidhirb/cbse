@@ -516,7 +516,7 @@ app.post("/upload-question-paper", upload.single("file"), async (req, res) => {
 app.get("/question-papers", async (req, res) => {
   try {
     // Optionally filter by category if the query parameter is provided
-    const category = req.query.category;  
+    const category = req.query.category;
     const filter = category ? { category } : {};  // If category is provided, filter by it
 
     const papers = await QuestionPaper.find(filter);
@@ -542,6 +542,51 @@ app.delete("/delete-question-paper/:paperId", async (req, res) => {
     res.status(500).json({ error: "❌ Error deleting paper" });
   }
 });
+
+
+
+// Assuming the user email is used as a unique identifier
+app.patch("/users/:emailAddress", async (req, res) => {
+  try {
+    const { emailAddress } = req.params;
+    const { fullName, phoneNumber, gender } = req.body;
+
+    // Validate required fields (can add more validation if needed)
+    if (!fullName && !phoneNumber && !gender) {
+      return res.status(400).json({ error: "❌ At least one editable field is required" });
+    }
+
+    // Only allow updates for fullName, phoneNumber, and gender
+    const updateData = {};
+    if (fullName) updateData.fullName = fullName;
+    if (phoneNumber) updateData.phoneNumber = phoneNumber;
+    if (gender) updateData.gender = gender;
+
+    const user = await User.findOneAndUpdate(
+      { emailAddress },
+      updateData,
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "❌ User not found" });
+    }
+
+    res.status(200).json({
+      message: "✅ User updated successfully",
+      data: {
+        fullName: user.fullName,
+        emailAddress: user.emailAddress,
+        phoneNumber: user.phoneNumber,
+        gender: user.gender,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Error updating user:", error);
+    res.status(500).json({ error: "❌ Error updating user" });
+  }
+});
+
 
 
 app.listen(5000, () => console.log("🚀 Server running on port 5000"));
