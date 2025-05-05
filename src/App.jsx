@@ -24,6 +24,9 @@ import QuestionPaperUpload from "./admin/QuestionPaperUpload"; // ✅ new
 // Route Guards
 import PrivateRoute from "./components/PrivateRoute";
 import AdminRoute from "./components/AdminRoute";
+import BlogUpload from "./admin/BlogUpload";
+import BlogDetail from "./pages/BlogDetail";
+import BlogList from "./pages/BlogList";
 
 function App() {
   return (
@@ -37,7 +40,8 @@ function App() {
         <Route path="/faq" element={<FaqPage />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/note/:category/:id" element={<NoteDetail />} />
-
+        <Route path="/blogs" element={<BlogList />} />
+        <Route path="/blogs/:id" element={<BlogDetail />} />
         {/* Protected User Route */}
         <Route
           path="/dashboard"
@@ -87,6 +91,14 @@ function App() {
           element={
             <AdminRoute>
               <QuestionPaperUpload />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/blogs"
+          element={
+            <AdminRoute>
+              <BlogUpload />
             </AdminRoute>
           }
         />

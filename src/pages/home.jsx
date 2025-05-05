@@ -76,7 +76,7 @@ function home() {
             {/* Hero Section */}
             <div className="w-full min-h-[90vh] px-4 py-10 flex flex-col-reverse md:flex-row justify-center items-center ">
               {/* Content Block */}
-              <div className="flex flex-col gap-6 max-w-md text-center md:text-left">
+              <div className="flex flex-col gap-6 max-w-xl text-center md:text-left">
                 <span className="text-3xl md:text-4xl font-medium leading-snug">
                   Take{" "}
                   <span className="text-blue-900 font-bold">

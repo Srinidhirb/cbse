@@ -90,67 +90,48 @@ const Dashboard = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex space-x-4 mt-6">
-          <button
-            onClick={() => setActiveTab("profile")}
-            className={`px-4 py-2 rounded-full font-semibold ${
-              activeTab === "profile"
-                ? "bg-blue-300 text-black"
-                : "border border-black"
-            }`}
-          >
-            My Profile
-          </button>
-          <button
-            onClick={() => setActiveTab("bookmarks")}
-            className={`px-4 py-2 rounded-full font-semibold ${
-              activeTab === "bookmarks"
-                ? "bg-blue-300 text-black"
-                : "border border-black"
-            }`}
-          >
-            Bookmarks
-          </button>
-          <button
-            onClick={() => setActiveTab("edit")}
-            className={`px-4 py-2 rounded-full font-semibold ${
-              activeTab === "edit"
-                ? "bg-blue-300 text-black"
-                : "border border-black"
-            }`}
-          >
-            Edit Profile
-          </button>
-          <button
-            onClick={() => setActiveTab("results")}
-            className={`px-4 py-2 rounded-full font-semibold ${
-              activeTab === "results"
-                ? "bg-blue-300 text-black"
-                : "border border-black"
-            }`}
-          >
-            Results
-          </button>
+        <div className="flex flex-wrap justify-center gap-2 mt-6">
+          {[
+            { key: "profile", label: "My Profile" },
+            { key: "bookmarks", label: "Bookmarks" },
+            { key: "edit", label: "Edit Profile" },
+            { key: "results", label: "Results" },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-4 py-2 rounded-full font-semibold ${
+                activeTab === tab.key
+                  ? "bg-blue-300 text-black"
+                  : "border border-black"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* Dynamic Component Rendering */}
-        <div className="flex justify-center  gap-4  mt-7  items-start">
-          {isLoading && (
-            <div className="flex items-center justify-center h-screen">
+        <div className="flex flex-col md:flex-row justify-center gap-6 mt-7 items-start">
+          {isLoading ? (
+            <div className="flex items-center justify-center w-full">
               <Spinner size="xl" color="blue.500" />
             </div>
+          ) : (
+            <>
+              <div className="w-full md:w-1/2">{renderActiveTab()}</div>
+              <div className="w-full md:w-1/2">
+                <VideoCarousel
+                  videos={videos}
+                  isLoading={isLoading}
+                  isError={isError}
+                />
+              </div>
+            </>
           )}
-          <div className="w-1/2">{renderActiveTab()}</div>
-          <div className="w-1/2">
-            <VideoCarousel
-              videos={videos}
-              isLoading={isLoading}
-              isError={isError}
-            />
-          </div>
         </div>
       </div>
-      <Footer/>
+      <Footer />
     </>
   );
 };

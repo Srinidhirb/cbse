@@ -64,6 +64,11 @@ const Nav = () => {
             FAQ
           </li>
         </Link>
+        <Link to="/blogs">
+          <li className="font-semibold text-lg hover:underline underline-offset-8">
+            Blogs
+          </li>
+        </Link>
         <Link to="/contact">
           <li className="font-semibold text-lg hover:underline underline-offset-8">
             Contact Us
@@ -123,6 +128,9 @@ const Nav = () => {
           </Link>
           <Link to="/faq" onClick={toggleMenu}>
             <div className="text-lg font-medium">FAQ</div>
+          </Link>
+          <Link to="/blogs" onClick={toggleMenu}>
+            <div className="text-lg font-medium">Blogs</div>
           </Link>
           <Link to="/contact" onClick={toggleMenu}>
             <div className="text-lg font-medium">Contact Us</div>

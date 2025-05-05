@@ -588,5 +588,71 @@ app.patch("/users/:emailAddress", async (req, res) => {
 });
 
 
+const blogSchema = new mongoose.Schema({
+  title: String,
+  description: String,
+  image: String,
+  file: String, // Optional file upload
+  createdAt: { type: Date, default: Date.now },
+});
+
+// Blog model
+const Blog = mongoose.model("Blog", blogSchema);
+
+// Multer configuration for file uploads
+
+
+// Blog upload route
+app.post("/blogs/upload", upload.fields([{ name: "image", maxCount: 1 }, { name: "file", maxCount: 1 }]), async (req, res) => {
+  const { title, description } = req.body;
+
+  // Validate required fields
+  if (!title || !description || !req.files?.image) {
+    return res.status(400).json({ error: "Title, description, and image are required" });
+  }
+
+  // Prepare file paths for the image and optional file
+  const imagePath = req.files.image[0].path;
+  const filePath = req.files.file ? req.files.file[0].path : null;
+
+  try {
+    const newBlog = new Blog({
+      title,
+      description,
+      image: imagePath,
+      file: filePath,
+    });
+
+    await newBlog.save();
+    res.status(201).json({ message: "Blog uploaded successfully", data: newBlog });
+  } catch (err) {
+    console.error("Error uploading blog:", err);
+    res.status(500).json({ error: "Error uploading blog" });
+  }
+});
+
+app.get("/blogs", async (req, res) => {
+  try {
+    const blogs = await Blog.find();
+    res.status(200).json({ blogs });
+  } catch (err) {
+    console.error("Error fetching blogs:", err);
+    res.status(500).json({ error: "Error fetching blogs" });
+  }
+});
+
+app.get("/blogs/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return res.status(404).json({ error: "Blog not found" });
+    }
+    res.status(200).json({ blog });
+  } catch (err) {
+    console.error("Error fetching blog:", err);
+    res.status(500).json({ error: "Error fetching blog" });
+  }
+});
 
 app.listen(5000, () => console.log("🚀 Server running on port 5000"));

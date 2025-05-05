@@ -41,28 +41,13 @@ function Footer() {
             <h3 className="text-lg font-bold mb-2">Contact Us</h3>
             <p>Phone: +91 91919191991</p>
             <p>Mail: <a href="mailto:abc@gmail.com" className="hover:underline">abc@gmail.com</a></p>
-            <div className="mt-4">
-              <h3 className="text-lg font-bold mb-2">Subscribe</h3>
-              <form className="flex flex-wrap gap-2">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="flex-1 px-4 py-2 rounded-md text-gray-800"
-                />
-                <button
-                  type="submit"
-                  className="bg-blue-500 px-4 py-2 rounded-md hover:bg-blue-600"
-                >
-                  Subscribe
-                </button>
-              </form>
-            </div>
+            
           </div>
         </div>
 
         {/* Bottom Section */}
         <div className="mt-8 border-t border-gray-700 pt-4 flex flex-wrap justify-between items-center">
-          <p className="text-sm">© 2024 All Rights Reserved</p>
+          <p className="text-sm">© 2025 All Rights Reserved</p>
           <div className="flex space-x-4">
             <a href="#facebook" className="hover:underline">Facebook</a>
             <a href="#twitter" className="hover:underline">Twitter</a>

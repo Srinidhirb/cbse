@@ -10,6 +10,12 @@ import {
   AlertDialogBody,
   AlertDialogFooter,
   Button,
+  Container,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+  CloseButton,
 } from "@chakra-ui/react";
 import StudyMaterialSection from "../components/StudyMaterialSection";
 import Nav from "../components/Nav";
@@ -44,7 +50,7 @@ const NoteDetail = () => {
           setAllowAccess(true); // user is logged in
         }
       } catch (err) {
-        setError("Error fetching note details.");
+        setError("Failed to load the note. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -64,41 +70,61 @@ const NoteDetail = () => {
   };
 
   if (loading) return <Loader />;
-  if (error) return <p>{error}</p>;
-  if (!note) return <p>No note found.</p>;
 
   return (
     <>
       <Nav />
-      <Box className="container" mx="auto" px={10} mt="6">
-        <Text
-          fontSize="3xl"
-          bgColor={"#0245A3"}
-          textColor={"#BDF1F6"}
-          pl={6}
-          py={4}
-          borderRadius={22}
-          textTransform={"capitalize"}
-          fontWeight="bold"
-          mb={4}
-        >
-          {note.title}
-        </Text>
-        <Text fontSize="lg" px="2" mb={4}>
-          {note.description}
-        </Text>
+      <Box className="container" mx="auto" px={10} mt="6" py={[4, 6, 8]}>
+        {error && (
+          <div className="flex h-52 justify-center items-center">
+          <Alert status="error" mb={6} borderRadius="md">
+            <AlertIcon />
+            <Box flex="1">
+              <AlertTitle>Error!</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Box>
+           
+          </Alert>
+          </div>
+        )}
 
-        {/* StudyMaterialSection with login check prop */}
-        <StudyMaterialSection
-          youtubeLinks={note.youtubeLinks}
-          attachments={note.files}
-          chapter={note.title}
-          isLoggedIn={userEmail || allowAccess}
-        />
+        {!error && note && (
+          <Box>
+            <Text
+              fontSize={["xl", "2xl", "3xl"]}
+              bgColor="#0245A3"
+              color="#BDF1F6"
+              px={[4, 6]}
+              py={[2, 4]}
+              borderRadius="2xl"
+              textTransform="capitalize"
+              fontWeight="bold"
+              mb={4}
+            >
+              {note.title}
+            </Text>
+
+            <Text
+              fontSize={["md", "lg"]}
+              px={[2, 2]}
+              mb={6}
+              textAlign="justify"
+            >
+              {note.description}
+            </Text>
+
+            <StudyMaterialSection
+              youtubeLinks={note.youtubeLinks}
+              attachments={note.files}
+              chapter={note.title}
+              isLoggedIn={userEmail || allowAccess}
+            />
+          </Box>
+        )}
       </Box>
       <Footer />
 
-      {/* Alert Dialog for login prompt */}
+      {/* Alert Dialog */}
       <AlertDialog
         isOpen={showAlert}
         leastDestructiveRef={cancelRef}
@@ -106,7 +132,7 @@ const NoteDetail = () => {
         isCentered
       >
         <AlertDialogOverlay>
-          <AlertDialogContent>
+          <AlertDialogContent mx={4}>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
               Login Required
             </AlertDialogHeader>

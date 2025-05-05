@@ -1,92 +1,69 @@
-import React, { useState } from "react";
+import React from "react";
 import {
-  FormControl,
-  FormLabel,
-  Input,
-  Textarea,
-  Button,
-  useToast,
+  Box,
+  Text,
+  VStack,
+  HStack,
+  Icon,
+  useColorModeValue,
 } from "@chakra-ui/react";
+import { MdEmail, MdPhone, MdLocationOn } from "react-icons/md";
 import Nav from "../components/Nav";
-
+import Lottie from "react-lottie-player";
+import ContactAnimation from "../assets/contact.json"; // Adjust path as needed
+import Footer from "../components/Footer";
 export default function ContactUs() {
-  const toast = useToast();
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
-
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Simulate form submission
-    toast({
-      title: "Message sent!",
-      description: "We'll get back to you shortly.",
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-    });
-    setFormData({ name: "", email: "", message: "" });
-  };
+  const bg = useColorModeValue("white");
 
   return (
     <>
-    <Nav />
-    <div className="min-h-screen  px-4 py-12 flex flex-col items-center">
-      <h1 className="text-4xl font-bold mb-8 text-gray-800">Contact Us</h1>
-      <div className="w-full max-w-xl bg-white rounded-2xl shadow-lg p-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <FormControl isRequired>
-            <FormLabel className="text-gray-700">Name</FormLabel>
-            <Input
-              name="name"
-              placeholder="Your Name"
-              value={formData.name}
-              onChange={handleChange}
-              className="bg-gray-50"
-            />
-          </FormControl>
+      <Nav />
+      <div className=" px-4 pt-12 flex flex-col items-center ">
+        <h1 className="text-4xl font-bold mb-4 text-gray-800">Contact Us</h1>
+        <Text className="text-lg  text-gray-600 text-center max-w-2xl">
+          We'd love to hear from you! Feel free to reach out to us through any
+          of the following ways.
+        </Text>
 
-          <FormControl isRequired>
-            <FormLabel className="text-gray-700">Email</FormLabel>
-            <Input
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              value={formData.email}
-              onChange={handleChange}
-              className="bg-gray-50"
+        <div className="w-full max-w-5xl flex items-center flex-col md:flex-row bg-white  rounded-2xl overflow-hidden">
+          {/* Left side - Image */}
+          <div className="md:w-1/2 w-full  md:h-auto">
+            <Lottie
+              loop
+              animationData={ContactAnimation}
+              play
+              style={{ width: "100%", height: "50%" }}
             />
-          </FormControl>
+          </div>
 
-          <FormControl isRequired>
-            <FormLabel className="text-gray-700">Message</FormLabel>
-            <Textarea
-              name="message"
-              placeholder="Your message..."
-              rows={5}
-              value={formData.message}
-              onChange={handleChange}
-              className="bg-gray-50"
-            />
-          </FormControl>
+          {/* Right side - Contact Info */}
+          <Box className="p-8 flex-1">
+            <VStack align="start" spacing={6}>
+              <HStack spacing={4}>
+                <Icon as={MdEmail} boxSize={6} color="blue.500" />
+                <Text fontSize="lg" fontWeight="medium">
+                  support@example.com
+                </Text>
+              </HStack>
 
-          <Button
-            type="submit"
-            colorScheme="blue"
-            size="lg"
-            width="full"
-            className="rounded-xl"
-          >
-            Send Message
-          </Button>
-        </form>
+              <HStack spacing={4}>
+                <Icon as={MdPhone} boxSize={6} color="green.500" />
+                <Text fontSize="lg" fontWeight="medium">
+                  +91 98765 43210
+                </Text>
+              </HStack>
+
+              <HStack spacing={4}>
+                <Icon as={MdLocationOn} boxSize={6} color="red.500" />
+                <Text fontSize="lg" fontWeight="medium">
+                  123, 4th Block, Koramangala, Bengaluru, India
+                </Text>
+              </HStack>
+            </VStack>
+          </Box>
+        </div>
       </div>
-    </div>
+      <Footer />
     </>
   );
 }

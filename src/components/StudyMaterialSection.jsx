@@ -191,7 +191,6 @@ const StudyMaterialSection = ({
       <Flex
         direction={["column", null, "row"]}
         gap={12}
-
         align="flex-start"
         flexWrap="wrap"
       >
@@ -258,7 +257,7 @@ const StudyMaterialSection = ({
           align="stretch"
           flex="1"
           minW={["70%", null, "35%"]}
-          alignItems="end"
+          alignItems="center"
         >
           <Box
             bg="white"
@@ -309,16 +308,15 @@ const StudyMaterialSection = ({
         onClose={onMainModalClose}
         isCentered
         size="6xl"
-        
       >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>{activeLabel} </ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6} className="flex items-center justify-center">
-            <VStack spacing={4} >
+            <VStack spacing={4}>
               {getItems().length > 0 ? (
-                <HStack spacing={4}  flexWrap="wrap">
+                <HStack spacing={4} flexWrap="wrap">
                   {getItems().map((item, idx) =>
                     activeLabel === "Videos" ? (
                       <div className="flex gap-4 flex-wrap justify-start items-start">
@@ -331,7 +329,7 @@ const StudyMaterialSection = ({
                           colorScheme="teal"
                           w="100%"
                         >
-                         {chapter} Video {idx + 1}
+                          {chapter} Video {idx + 1}
                         </Button>
                       </div>
                     ) : (
@@ -341,22 +339,22 @@ const StudyMaterialSection = ({
                         colorScheme="blue"
                         w="100%"
                       >
-                       {chapter} Notes {idx + 1}
+                        {chapter} Notes {idx + 1}
                       </Button>
                     )
                   )}
                 </HStack>
               ) : (
                 <div className="flex justify-center items-center">
-                <Lottie
-                        loop
-                        animationData={comingSoonAnimation}
-                        play
-                        style={{ width: 200, height: 200 }}
-                        justifyContent="center"
-                        alignItems="center"
-                      />
-                      </div>
+                  <Lottie
+                    loop
+                    animationData={comingSoonAnimation}
+                    play
+                    style={{ width: 200, height: 200 }}
+                    justifyContent="center"
+                    alignItems="center"
+                  />
+                </div>
               )}
             </VStack>
           </ModalBody>

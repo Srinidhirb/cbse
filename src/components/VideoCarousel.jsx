@@ -14,28 +14,28 @@ const VideoCarousel = ({ videos, isLoading, isError }) => {
   };
 
   const settings = {
-    dots: true,
+    dots: false,
     infinite: true,
     speed: 500,
     slidesToShow: 2,
     slidesToScroll: 1,
-    arrows: false, // We’re using custom arrows
+    arrows: false,
     responsive: [
       {
         breakpoint: 1024,
-        settings: { slidesToShow: 2 }
+        settings: { slidesToShow: 2 },
       },
       {
         breakpoint: 768,
-        settings: { slidesToShow: 1 }
-      }
-    ]
+        settings: { slidesToShow: 1 },
+      },
+    ],
   };
 
   return (
-    <div className=" p-6  bg-white border-2 rounded-lg shadow-lg  w-[100vh] mx-auto">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-2xl font-semibold">Videos That May Interest You</h3>
+    <div className="w-full md:w-[90%] lg:w-[100%] mx-auto p-4 bg-white border-2 rounded-lg shadow-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 ">
+        <h3 className="text-xl sm:text-2xl font-semibold">Videos That May Interest You</h3>
         <div className="flex gap-2">
           <button
             onClick={() => sliderRef.current.slickPrev()}
@@ -53,7 +53,7 @@ const VideoCarousel = ({ videos, isLoading, isError }) => {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center ">
+        <div className="flex items-center justify-center h-40">
           <Spinner size="xl" color="blue.500" />
         </div>
       ) : isError ? (
@@ -64,19 +64,16 @@ const VideoCarousel = ({ videos, isLoading, isError }) => {
             const videoId = getVideoId(video.url);
             return (
               <div key={index} className="px-2">
-                <div className="bg-white shadow-lg h-56 rounded-lg overflow-hidden">
+                <div className="bg-white shadow-md rounded-lg overflow-hidden">
                   <iframe
-                    className="w-full h-56"
+                    className="w-full h-56 md:h-72 lg:h-56"
                     src={`https://www.youtube.com/embed/${videoId}`}
                     title={video.title || `Video ${index + 1}`}
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />
-                  <div className="p-4">
-                    <p className="text-blue-600 font-bold">{video.subject}</p>
-                    <p>{video.title}</p>
-                  </div>
+                 
                 </div>
               </div>
             );
