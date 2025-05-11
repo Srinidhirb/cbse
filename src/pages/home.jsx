@@ -71,7 +71,7 @@ function home() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="App bg-bgblue">
+          <div className="App ">
             <Nav />
             {/* Hero Section */}
             <div className="w-full min-h-[90vh] px-4 py-10 flex flex-col-reverse md:flex-row justify-center items-center ">

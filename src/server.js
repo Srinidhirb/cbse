@@ -655,4 +655,66 @@ app.get("/blogs/:id", async (req, res) => {
   }
 });
 
+
+// Edit Blog route
+app.put("/blogs/:id", upload.fields([{ name: "image", maxCount: 1 }, { name: "file", maxCount: 1 }]), async (req, res) => {
+  const { id } = req.params;
+  const { title, description } = req.body;
+
+  // Validate required fields
+  if (!title || !description) {
+    return res.status(400).json({ error: "Title and description are required" });
+  }
+
+  // Prepare file paths if updated
+  let imagePath = req.body.image;
+  let filePath = req.body.file;
+
+  if (req.files?.image) {
+    imagePath = req.files.image[0].path;
+  }
+
+  if (req.files?.file) {
+    filePath = req.files.file[0].path;
+  }
+
+  try {
+    // Find the blog by ID and update it
+    const updatedBlog = await Blog.findByIdAndUpdate(
+      id,
+      { title, description, image: imagePath, file: filePath },
+      { new: true } // Return the updated blog
+    );
+
+    if (!updatedBlog) {
+      return res.status(404).json({ error: "Blog not found" });
+    }
+
+    res.status(200).json({ message: "Blog updated successfully", data: updatedBlog });
+  } catch (err) {
+    console.error("Error updating blog:", err);
+    res.status(500).json({ error: "Error updating blog" });
+  }
+});
+
+// Delete Blog route
+app.delete("/blogs/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Find the blog by ID and delete it
+    const deletedBlog = await Blog.findByIdAndDelete(id);
+
+    if (!deletedBlog) {
+      return res.status(404).json({ error: "Blog not found" });
+    }
+
+    res.status(200).json({ message: "Blog deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting blog:", err);
+    res.status(500).json({ error: "Error deleting blog" });
+  }
+});
+
+
 app.listen(5000, () => console.log("🚀 Server running on port 5000"));
