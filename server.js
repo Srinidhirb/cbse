@@ -36,10 +36,7 @@ app.use(limiter);
 // Connect to MongoDB
 const API_URL = process.env.MONGO_URI;
 
-mongoose.connect(API_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose.connect(MONGO_URI);
 
 const db = mongoose.connection;
 db.once("open", () => console.log("✅ Connected to MongoDB"));
