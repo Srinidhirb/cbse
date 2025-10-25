@@ -1,5 +1,5 @@
 import React from "react";
-import Lines from "../assets/threeLines.png";
+import Lines from "/assets/threeLines.png";
 import { Link } from "react-router-dom";
 
 function Banner() {

@@ -5,7 +5,7 @@ import { Spinner } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import Loader from "../components/Loader";
 import Nav from "../components/Nav";
-import dashboard from "../assets/dashboard.png";
+const dashboard = "/assets/dashboard.png";
 import MyProfile from "../components/MyProfile";
 import Bookmarks from "../components/Bookmarks"; // Add if it exists
 import EditProfile from "../components/EditProfile"; // Add if it exists

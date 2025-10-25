@@ -1,8 +1,8 @@
 import React, { useRef, useState } from "react";
-import logo from "../assets/logo.png";
+const logo = "/assets/logo.png";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import User from "../assets/icons/user.png";
+const User = "/assets/icons/user.png";
 import {
   Button,
   AlertDialog,

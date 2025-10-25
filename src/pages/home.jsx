@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Nav from "../components/Nav";
-import Suc from "../assets/success.png";
-import Hero from "../assets/hero.png";
-import step1 from "../assets/step1.png";
-import step2 from "../assets/step2.png";
-import step3 from "../assets/step3.png";
-import step4 from "../assets/step4.png";
+const Suc = "/assets/success.png";
+
+
+const Hero = "/assets/hero.png";
+
 import TestimonialSection from "../components/TestimonialSection";
 import CardCarousel from "../components/CardCarousel";
 import Banner from "../components/Banner";

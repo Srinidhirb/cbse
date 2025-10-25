@@ -1,7 +1,7 @@
 import React from "react";
-import Login1 from "../assets/login1.png";
-import Login2 from "../assets/login2.png";
-import Login3 from "../assets/login3.png";
+const Login1 = "/assets/login1.png";
+const Login2 = "/assets/login2.png";
+const Login3 = "/assets/login3.png";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css"; // Import slick-carousel CSS
 import "slick-carousel/slick/slick-theme.css"; // Import slick-carousel theme

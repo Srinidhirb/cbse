@@ -2,9 +2,9 @@ import React from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import Courses1 from "../assets/courses1.png";
-import Courses2 from "../assets/courses2.png";
-import Courses3 from "../assets/courses3.png";
+import Courses1 from "/assets/courses1.png";
+import Courses2 from "/assets/courses2.png";
+import Courses3 from "/assets/courses3.png";
 
 const settings = {
   dots: true,
@@ -30,7 +30,7 @@ function CoursesSlider() {
   const courseData = [
     {
       image: Courses1,
-    
+
       heading: "Video Lectures",
       features: [
         {
@@ -49,7 +49,7 @@ function CoursesSlider() {
     },
     {
       image: Courses2,
-      
+
       heading: "Comprehensive Notes",
       features: [
         {
@@ -68,7 +68,7 @@ function CoursesSlider() {
     },
     {
       image: Courses3,
-      
+
       heading: "Practice Exams",
       features: [
         {
@@ -99,7 +99,6 @@ function CoursesSlider() {
                   <div className="w-60 md:w-80 rounded-lg overflow-hidden">
                     <img src={course.image} alt="" className="w-full h-auto" />
                   </div>
-                 
                 </div>
 
                 {/* Text Content */}

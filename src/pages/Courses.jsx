@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Nav from "../components/Nav";
-import Bg from "../assets/coursesbg.png";
+const Bg = "../assets/coursesbg.png";
 import CoursesSlider from "../components/CoursesSlider";
 import Footer from "../components/Footer";
 import Lottie from "react-lottie-player";
