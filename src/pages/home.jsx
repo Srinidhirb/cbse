@@ -12,34 +12,57 @@ import Banner from "../components/Banner";
 import Footer from "../components/Footer";
 import Lottie from "react-lottie-player";
 
-import Sign from "../assets/sign_in.json";
-import Access from "../assets/access.json";
-import Practice from "../assets/exam.json";
-import Result from "../assets/result.json";
 import Loader from "../components/Loader";
 import { AnimatePresence, motion } from "framer-motion";
 import SuccessSection from "../components/SuccessSection";
 function home() {
   const [selectedStep, setSelectedStep] = useState("signup");
   const [loading, setLoading] = useState(true);
+  const [signData, setSignData] = useState(null);
+  const [accessData, setAccessData] = useState(null);
+  const [practiceData, setPracticeData] = useState(null);
+  const [resultData, setResultData] = useState(null);
+  useEffect(() => {
+    const fetchJsonData = async () => {
+      const sign = await fetch("/json/sign_in.json").then((res) => res.json());
+      const access = await fetch("/json/access.json").then((res) => res.json());
+      const practice = await fetch("/json/exam.json").then((res) => res.json());
+      const result = await fetch("/json/result.json").then((res) => res.json());
+
+      setSignData(sign);
+      setAccessData(access);
+      setPracticeData(practice);
+      setResultData(result);
+    };
+
+    fetchJsonData();
+  }, []);
+
   // Function to render the image based on the selected step
   const renderStepImage = () => {
     const commonProps = {
       loop: true,
       play: true,
-      onComplete: () => setShowText(true),
-      className: "w-[70%] max-w-[500px] h-auto md:h-[350px]", // responsive sizing
+      className: "w-[70%] max-w-[500px] h-auto md:h-[350px]",
     };
 
     switch (selectedStep) {
       case "signup":
-        return <Lottie {...commonProps} animationData={Sign} />;
+        return signData && <Lottie {...commonProps} animationData={signData} />;
       case "getaccess":
-        return <Lottie {...commonProps} animationData={Access} />;
+        return (
+          accessData && <Lottie {...commonProps} animationData={accessData} />
+        );
       case "practice":
-        return <Lottie {...commonProps} animationData={Practice} />;
+        return (
+          practiceData && (
+            <Lottie {...commonProps} animationData={practiceData} />
+          )
+        );
       case "result":
-        return <Lottie {...commonProps} animationData={Result} />;
+        return (
+          resultData && <Lottie {...commonProps} animationData={resultData} />
+        );
       default:
         return null;
     }

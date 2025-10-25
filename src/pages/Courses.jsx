@@ -5,7 +5,7 @@ import CoursesSlider from "../components/CoursesSlider";
 import Footer from "../components/Footer";
 import Lottie from "react-lottie-player";
 import { Link } from "react-router-dom";
-import NoData from "../assets/no_data.json";
+
 import Loader from "../components/Loader";
 import { motion } from "framer-motion";
 
@@ -13,7 +13,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 function Courses() {
   const [selectedSection, setSelectedSection] = useState(null);
-
+  const [noDataAnimation, setNoDataAnimation] = useState(null);
   // All categories for Math and Science, Classes 1-10
   const allCategories = [
     "Class 1 Science",
@@ -37,7 +37,12 @@ function Courses() {
     "Class 9 Math",
     "Class 10 Math",
   ];
-
+  useEffect(() => {
+    fetch("/json/no_data.json")
+      .then((res) => res.json())
+      .then((data) => setNoDataAnimation(data))
+      .catch((err) => console.error("Error loading NoData animation:", err));
+  }, []);
   // Initialize courses state for all categories
   const [courses, setCourses] = useState(
     allCategories.reduce((acc, cat) => ({ ...acc, [cat]: [] }), {})
@@ -205,7 +210,7 @@ function Courses() {
                                 <Lottie
                                   loop={true}
                                   play
-                                  animationData={NoData}
+                                  animationData={noDataAnimation}
                                   style={{ width: 150, height: 100 }}
                                 />
                                 No courses available.
@@ -217,7 +222,7 @@ function Courses() {
                   </div>
                 ))}
               </div>
-                    <div className="w-2/4 ">
+              <div className="w-2/4 ">
                 <h1 className="text-2xl font-bold mb-4">Math Courses</h1>
                 {classes.map((noteClass) => (
                   <div
@@ -275,7 +280,7 @@ function Courses() {
                                 <Lottie
                                   loop={true}
                                   play
-                                  animationData={NoData}
+                                  animationData={noDataAnimation}
                                   style={{ width: 150, height: 100 }}
                                 />
                                 No courses available.

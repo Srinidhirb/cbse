@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Text,
@@ -10,30 +10,43 @@ import {
 import { MdEmail, MdPhone, MdLocationOn } from "react-icons/md";
 import Nav from "../components/Nav";
 import Lottie from "react-lottie-player";
-import ContactAnimation from "../assets/contact.json"; // Adjust path as needed
 import Footer from "../components/Footer";
+
 export default function ContactUs() {
   const bg = useColorModeValue("white");
+  const [contactAnimation, setContactAnimation] = useState(null);
+
+  // Fetch Lottie animation dynamically from public/json
+  useEffect(() => {
+    fetch("/json/contact.json")
+      .then((res) => res.json())
+      .then((data) => setContactAnimation(data))
+      .catch((err) =>
+        console.error("Error loading Contact animation JSON:", err)
+      );
+  }, []);
 
   return (
     <>
       <Nav />
-      <div className=" px-4 pt-12 flex flex-col items-center ">
+      <div className="px-4 pt-12 flex flex-col items-center">
         <h1 className="text-4xl font-bold mb-4 text-gray-800">Contact Us</h1>
-        <Text className="text-lg  text-gray-600 text-center max-w-2xl">
+        <Text className="text-lg text-gray-600 text-center max-w-2xl">
           We'd love to hear from you! Feel free to reach out to us through any
           of the following ways.
         </Text>
 
-        <div className="w-full max-w-5xl flex items-center flex-col md:flex-row bg-white  rounded-2xl overflow-hidden">
+        <div className="w-full max-w-5xl flex items-center flex-col md:flex-row bg-white rounded-2xl overflow-hidden">
           {/* Left side - Image */}
-          <div className="md:w-1/2 w-full  md:h-auto">
-            <Lottie
-              loop
-              animationData={ContactAnimation}
-              play
-              style={{ width: "100%", height: "50%" }}
-            />
+          <div className="md:w-1/2 w-full md:h-auto">
+            {contactAnimation && (
+              <Lottie
+                loop
+                animationData={contactAnimation}
+                play
+                style={{ width: "100%", height: "50%" }}
+              />
+            )}
           </div>
 
           {/* Right side - Contact Info */}

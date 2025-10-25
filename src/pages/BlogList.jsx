@@ -14,7 +14,7 @@ import { Link } from "react-router-dom";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import Lottie from "react-lottie-player";
-import Blogs from "../assets/blogs.json";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 // Move fetchBlogs outside useEffect to prevent re-creation on every render
@@ -39,7 +39,17 @@ function BlogList() {
   const [loading, setLoading] = useState(false); // used for infinite scroll
   const [initialLoading, setInitialLoading] = useState(true); // used for initial page load
 
+  const [BlogsAnimation, setBlogsAnimation] = useState(null);
+
   const observer = useRef(null);
+
+  // Load animation JSON from public folder
+  useEffect(() => {
+    fetch("/json/blogs.json")
+      .then((res) => res.json())
+      .then((data) => setBlogsAnimation(data))
+      .catch((err) => console.error("Error loading Blogs animation:", err));
+  }, []);
 
   useEffect(() => {
     fetchBlogs(setBlogs, setVisibleBlogs, setInitialLoading, blogsPerPage);
@@ -108,13 +118,15 @@ function BlogList() {
       ) : (
         <>
           <Box px={[4, 8]} pb={10}>
-            <div className="flex gap-2 justify-center items-center"><Lottie
-                loop
-                animationData={Blogs}
-                play
-                style={{ width: 200, height: 200, marginBottom: "20px" }}
-              />
-            
+            <div className="flex gap-2 justify-center items-center">
+              {BlogsAnimation && (
+                <Lottie
+                  loop
+                  animationData={BlogsAnimation}
+                  play
+                  style={{ width: 200, height: 200, marginBottom: "20px" }}
+                />
+              )}
             </div>
 
             <SimpleGrid columns={[1, 2, 3, 4]} spacing={6}>

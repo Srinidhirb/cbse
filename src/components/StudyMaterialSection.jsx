@@ -22,18 +22,14 @@ import {
   AlertDialogFooter,
 } from "@chakra-ui/react";
 import { ChevronRightIcon } from "@chakra-ui/icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Lottie from "react-lottie-player";
-import Notes from "../assets/notes.json";
-import Videos from "../assets/video.json";
-import Exam from "../assets/ExamAni.json";
+
 import { InfoOutlineIcon } from "@chakra-ui/icons";
 import { Tooltip } from "@chakra-ui/react";
-
-import comingSoonAnimation from "../assets/soon.json"; // Adjust path as needed
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
+
 const StudyMaterialSection = ({
   youtubeLinks = [],
   attachments = [],
@@ -48,6 +44,42 @@ const StudyMaterialSection = ({
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const navigate = useNavigate();
   const iframeRef = useRef(null);
+  const [animations, setAnimations] = useState({
+    Notes: null,
+    Videos: null,
+    Exam: null,
+    ComingSoon: null,
+  });
+  const [comingSoonAnimation, setComingSoonAnimation] = useState(null);
+useEffect(() => {
+  const loadAnimations = async () => {
+    const files = ["notes.json", "video.json", "ExamAni.json", "soon.json"];
+    const data = {};
+
+    for (const file of files) {
+      try {
+        const res = await fetch(`/json/${file}`);
+        if (!res.ok) {
+          console.error(`${file} not found`);
+          continue;
+        }
+        const keyName = file.replace(".json", "");
+        data[keyName] = await res.json();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    setAnimations({
+      Notes: data.notes,
+      Videos: data.video,
+      Exam: data.ExamAni,
+      ComingSoon: data.soon,
+    });
+  };
+
+  loadAnimations(); // Call the async function
+}, []);
 
   const {
     isOpen: isMainModalOpen,
@@ -62,9 +94,9 @@ const StudyMaterialSection = ({
   } = useDisclosure();
 
   const cardData = [
-    { label: "Notes", animation: Notes },
-    { label: "Videos", animation: Videos },
-    { label: "Exam", animation: Exam },
+    { label: "Notes", animation: animations.Notes },
+    { label: "Videos", animation: animations.Videos },
+    { label: "Exam", animation: animations.Exam },
   ];
 
   const handleCardClick = (label) => {
@@ -100,7 +132,7 @@ const StudyMaterialSection = ({
     if (!selectedItem) {
       return <Text>No content selected.</Text>;
     }
-    
+
     if (activeLabel === "Videos") {
       return (
         <Box
@@ -115,6 +147,29 @@ const StudyMaterialSection = ({
         />
       );
     }
+    // At the top level of your component
+    // useEffect(() => {
+    //   const loadAnimations = async () => {
+    //     const files = [
+    //       "notes.json",
+    //       "video.json",
+    //       "ExamAni.json",
+    //       "soon.json",
+    //     ];
+    //     const data = {};
+    //     for (const file of files) {
+    //       try {
+    //         const res = await fetch(`/json/${file}`);
+    //         if (!res.ok) continue;
+    //         data[file.replace(".json", "")] = await res.json();
+    //       } catch (err) {
+    //         console.error(err);
+    //       }
+    //     }
+    //     setAnimations(data);
+    //   };
+    //   loadAnimations();
+    // }, []);
 
     if (activeLabel === "Notes") {
       const normalizedPath = selectedItem.replace(/\\/g, "/");
@@ -128,58 +183,55 @@ const StudyMaterialSection = ({
 
       return (
         <>
-         {!isLoggedIn && (
-        <Flex
-          position="absolute"
-          top="6"
-          left="160"
-          zIndex="10"
-          align="center"
-          gap={2}
-        >
-          <Tooltip
-            label="You are viewing only the first page of this document. Please login to view the full content."
-            aria-label="Access Info"
-            hasArrow
-            bg="blue.600"
-            color="white"
-            placement="right"
-          >
-            <InfoOutlineIcon
-              boxSize={4}
-              color="blue.500"
-              cursor="pointer"
+          {!isLoggedIn && (
+            <Flex
+              position="absolute"
+              top="6"
+              left="160"
+              zIndex="10"
+              align="center"
+              gap={2}
+            >
+              <Tooltip
+                label="You are viewing only the first page of this document. Please login to view the full content."
+                aria-label="Access Info"
+                hasArrow
+                bg="blue.600"
+                color="white"
+                placement="right"
+              >
+                <InfoOutlineIcon
+                  boxSize={4}
+                  color="blue.500"
+                  cursor="pointer"
+                />
+              </Tooltip>
+            </Flex>
+          )}
+          <Box position="relative" width="100%">
+            {/* PDF Preview */}
+            <Box
+              as="iframe"
+              src={fetchPdfUrl}
+              width="100%"
+              height="800px"
+              title="PDF"
+              borderRadius="md"
+              style={{
+                pointerEvents: isLoggedIn ? "auto" : "none",
+                border: "1px solid #ddd",
+              }}
+              onLoad={(e) => {
+                const iframe = e.target;
+                if (!isLoggedIn) {
+                  iframe.contentWindow?.document.body?.style?.setProperty(
+                    "overflow",
+                    "hidden"
+                  );
+                }
+              }}
             />
-          </Tooltip>
-        </Flex>
-      )}
-        <Box position="relative" width="100%">
-         
-
-          {/* PDF Preview */}
-          <Box
-            as="iframe"
-            src={fetchPdfUrl}
-            width="100%"
-            height="800px"
-            title="PDF"
-            borderRadius="md"
-            style={{
-              pointerEvents: isLoggedIn ? "auto" : "none",
-              border: "1px solid #ddd",
-            }}
-            onLoad={(e) => {
-              const iframe = e.target;
-              if (!isLoggedIn) {
-                iframe.contentWindow?.document.body?.style?.setProperty(
-                  "overflow",
-                  "hidden"
-                );
-              }
-            }}
-          />
-          
-        </Box>
+          </Box>
         </>
       );
     }
@@ -228,6 +280,15 @@ const StudyMaterialSection = ({
     fetchNotesSequentially();
   }, []);
 
+  useEffect(() => {
+    const fetchComingSoonAnimation = async () => {
+      const response = await fetch("/json/soon.json");
+      setComingSoonAnimation(await response.json());
+    };
+
+    fetchComingSoonAnimation();
+  }, []);
+
   return (
     <Box mt="6">
       <Flex
@@ -262,12 +323,17 @@ const StudyMaterialSection = ({
                 cursor="pointer"
                 onClick={() => handleCardClick(item.label)}
               >
-                <Lottie
-                  loop
-                  play
-                  animationData={item.animation}
-                  style={{ width: 130, height: 130 }}
-                />
+                {item.animation ? (
+                  <Lottie
+                    loop
+                    play
+                    animationData={item.animation}
+                    style={{ width: 130, height: 130 }}
+                  />
+                ) : (
+                  <Text>Loading...</Text>
+                )}
+
                 <Text fontWeight="bold" fontSize="md">
                   {item.label}
                 </Text>
@@ -388,18 +454,20 @@ const StudyMaterialSection = ({
                 </HStack>
               ) : (
                 <div className="flex justify-center items-center">
-                  <Lottie
-                    loop
-                    animationData={comingSoonAnimation}
-                    play
-                    style={{
-                      width: 200,
-                      height: 200,
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  />
+                  {comingSoonAnimation && (
+                    <Lottie
+                      loop
+                      animationData={comingSoonAnimation}
+                      play
+                      style={{
+                        width: 200,
+                        height: 200,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    />
+                  )}
                 </div>
               )}
             </VStack>
