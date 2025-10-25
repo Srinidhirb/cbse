@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import Nav from "../components/Nav";
-import Bg from "../Assets/coursesbg.png";
+import Bg from "../assets/coursesbg.png";
 import CoursesSlider from "../components/CoursesSlider";
 import Footer from "../components/Footer";
 import Lottie from "react-lottie-player";
 import { Link } from "react-router-dom";
-import NoData from "../Assets/no_data.json";
+import NoData from "../assets/no_data.json";
 import Loader from "../components/Loader";
 import { motion } from "framer-motion";
 

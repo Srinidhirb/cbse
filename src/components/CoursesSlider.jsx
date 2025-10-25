@@ -2,9 +2,9 @@ import React from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import Courses1 from "../Assets/courses1.png";
-import Courses2 from "../Assets/courses2.png";
-import Courses3 from "../Assets/courses3.png";
+import Courses1 from "../assets/courses1.png";
+import Courses2 from "../assets/courses2.png";
+import Courses3 from "../assets/courses3.png";
 
 const settings = {
   dots: true,

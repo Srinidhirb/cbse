@@ -1,6 +1,6 @@
 import React from 'react';
-import test from '../Assets/testinomial.png';
-import Thumb from '../Assets/thumbsUp.png';
+import test from '../assets/testinomial.png';
+import Thumb from '../assets/thumbsUp.png';
 
 const testimonials = [
   {

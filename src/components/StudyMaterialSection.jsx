@@ -24,9 +24,9 @@ import {
 import { ChevronRightIcon } from "@chakra-ui/icons";
 import { useState } from "react";
 import Lottie from "react-lottie-player";
-import Notes from "../Assets/notes.json";
-import Videos from "../Assets/video.json";
-import Exam from "../Assets/ExamAni.json";
+import Notes from "../assets/notes.json";
+import Videos from "../assets/video.json";
+import Exam from "../assets/ExamAni.json";
 import { InfoOutlineIcon } from "@chakra-ui/icons";
 import { Tooltip } from "@chakra-ui/react";
 

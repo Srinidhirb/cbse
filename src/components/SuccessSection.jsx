@@ -1,10 +1,10 @@
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import Experience from "../Assets/experience.json";
-import Courses from "../Assets/courses.json";
-import Success from "../Assets/success.json";
-import Students from "../Assets/students.json";
+import Experience from "../assets/experience.json";
+import Courses from "../assets/courses.json";
+import Success from "../assets/success.json";
+import Students from "../assets/students.json";
 import Lottie from "react-lottie-player";
 const SuccessSection = () => {
   const settings = {

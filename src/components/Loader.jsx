@@ -1,7 +1,7 @@
 import React from "react";
 import Lottie from "react-lottie-player";
 import { motion } from "framer-motion";
-import Loading from "../Assets/loader.json";
+import Loading from "../assets/loader.json";
 
 function Loader() {
   return (
