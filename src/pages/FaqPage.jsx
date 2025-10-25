@@ -11,7 +11,7 @@ import {
 
 import Nav from "../components/Nav";
 import Lottie from "react-lottie-player";
-import faqAnimation from "../assets/faq.json"; // Adjust path as needed
+import faqAnimation from "../assets/faq.json"; 
 import Footer from "../components/Footer";
 const faqs = [
   {
