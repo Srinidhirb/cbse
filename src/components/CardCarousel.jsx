@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Spinner } from "@chakra-ui/react";
 
 const CardCarousel = () => {
+  const API_URL = import.meta.env.VITE_API_URL; // Get API URL from environment variable
+
   // Fetch videos from the backend
   const {
     data: videos,
@@ -12,7 +14,7 @@ const CardCarousel = () => {
   } = useQuery({
     queryKey: ["videos"],
     queryFn: async () => {
-      const res = await fetch("http://localhost:5000/videos"); // Replace with your backend API
+      const res = await fetch(`${API_URL}/videos`); // Replace with your backend API
       if (!res.ok) throw new Error("Failed to fetch videos");
       return res.json();
     },
@@ -49,7 +51,7 @@ const CardCarousel = () => {
       },
     ],
   };
-  
+
   return (
     <div className="w-full max-w-6xl mx-auto relative py-4">
       <span className="text-center text-3xl font-semibold block mb-10">

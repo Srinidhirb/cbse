@@ -14,11 +14,12 @@ function AdminNavbar() {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex space-x-6">
-          <Link to="/admin/dashboard" className="hover:text-gray-400">Dashboard</Link>
+       
           <Link to="/admin/users" className="hover:text-gray-400">Users</Link>
           <Link to="/admin/content" className="hover:text-gray-400">Content</Link>
           <Link to="/admin/AddNote" className="hover:text-gray-400">AddNote</Link>
-          <Link to="/admin/settings" className="hover:text-gray-400">Settings</Link>
+          <Link to="/admin/blogs" className="hover:text-gray-400">Blogs</Link>
+          
         </div>
 
         {/* Mobile Menu Button */}
@@ -33,11 +34,12 @@ function AdminNavbar() {
       {/* Mobile Menu Dropdown */}
       {isOpen && (
         <div className="md:hidden mt-2 bg-gray-800 p-4 flex flex-col space-y-2">
-          <Link to="/admin/dashboard" className="hover:text-gray-400">Dashboard</Link>
+          
           <Link to="/admin/users" className="hover:text-gray-400">Users</Link>
           <Link to="/admin/content" className="hover:text-gray-400">Content</Link>
           <Link to="/admin/AddNote" className="hover:text-gray-400">AddNote</Link>
-          <Link to="/admin/settings" className="hover:text-gray-400">Settings</Link>
+          <Link to="/admin/blogs" className="hover:text-gray-400">Blogs</Link>
+         
         </div>
       )}
     </nav>

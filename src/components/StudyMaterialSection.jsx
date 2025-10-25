@@ -69,17 +69,9 @@ const StudyMaterialSection = ({
     onMainModalOpen();
   };
   const handleYouTubeLink = (link) => {
-    const regex =
-      /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+|(?:v|e(?:mbed)?)\/([a-zA-Z0-9_-]+)|(?:watch\?v=|.*[\/=])([a-zA-Z0-9_-]+))|youtu\.be\/([a-zA-Z0-9_-]+))/;
-    const match = link.match(regex);
-
-    if (match) {
-      const videoId = match[1] || match[2] || match[3]; // Extract the video ID
-      return `https://www.youtube.com/embed/${videoId}`;
-    } else {
-      console.error("Invalid YouTube URL");
-      return null; // Handle invalid link scenario
-    }
+    const videoId = getVideoId(link);
+    const embedUrl = `${import.meta.env.VITE_API_URL}/embed/${videoId}`;
+    navigate(embedUrl);
   };
 
   const handleItemClick = (item) => {
@@ -128,8 +120,8 @@ const StudyMaterialSection = ({
 
     if (activeLabel === "Notes") {
       const previewSrc = previewRestricted
-        ? `https://mozilla.github.io/pdf.js/web/viewer.html?file=http://localhost:5000/${selectedItem}#page=1&zoom=page-fit`
-        : `https://mozilla.github.io/pdf.js/web/viewer.html?file=http://localhost:5000/${selectedItem}#page=1`;
+        ? `https://mozilla.github.io/pdf.js/web/viewer.html?file=${import.meta.env.VITE_API_URL}/${selectedItem}#page=1&zoom=page-fit`
+        : `https://mozilla.github.io/pdf.js/web/viewer.html?file=${import.meta.env.VITE_API_URL}/${selectedItem}#page=1`;
 
       return (
         <Box
@@ -157,32 +149,32 @@ const StudyMaterialSection = ({
   const [randomNotes, setRandomNotes] = useState([]);
 
   useEffect(() => {
-    const fetchNotes = async () => {
+    const fetchNotesSequentially = async () => {
       try {
         const categories = ["Class 9 Math", "Class 9 Science"];
-        const urls = categories.map(
-          (category) =>
-            `http://localhost:5000/notes/${encodeURIComponent(category)}/random`
-        );
+        const combinedNotes = [];
 
-        const responses = await Promise.all(urls.map((url) => fetch(url)));
+        for (const category of categories) {
+          const url = `${import.meta.env.VITE_API_URL}/notes/${encodeURIComponent(
+            category
+          )}/random`;
+          const res = await fetch(url);
 
-        responses.forEach((res, index) => {
           if (!res.ok) {
-            throw new Error(`❌ Failed to fetch ${categories[index]} notes`);
+            throw new Error(`❌ Failed to fetch ${category} notes`);
           }
-        });
 
-        const data = await Promise.all(responses.map((res) => res.json()));
+          const data = await res.json();
+          combinedNotes.push(...data);
+        }
 
-        const combinedNotes = [...data[0], ...data[1]];
         setRandomNotes(combinedNotes);
       } catch (error) {
         console.error("❌ Error fetching random notes:", error);
       }
     };
 
-    fetchNotes();
+    fetchNotesSequentially();
   }, []);
   console.log("Selected Item:", selectedItem);
 

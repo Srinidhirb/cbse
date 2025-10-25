@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Spinner, useToast } from "@chakra-ui/react";
 import AdminNavbar from "./AdminNavbar";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function Admin() {
   const [url, setUrl] = useState("");
   const [editId, setEditId] = useState(null);
@@ -18,7 +20,7 @@ function Admin() {
   const { data: videos = [], isLoading, isError } = useQuery({
     queryKey: ["videos"],
     queryFn: async () => {
-      const res = await fetch("http://localhost:5000/videos");
+      const res = await fetch(`${API_URL}/videos`);
       if (!res.ok) throw new Error("Failed to fetch videos");
       return res.json();
     },
@@ -27,8 +29,8 @@ function Admin() {
   const mutation = useMutation({
     mutationFn: async (videoData) => {
       const endpoint = editId
-        ? `http://localhost:5000/update/${editId}`
-        : "http://localhost:5000/add";
+        ? `${API_URL}/update/${editId}`
+        : `${API_URL}/add`;
       const method = editId ? "PUT" : "POST";
 
       return fetch(endpoint, {
@@ -62,7 +64,7 @@ function Admin() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      return fetch(`http://localhost:5000/delete/${id}`, {
+      return fetch(`${API_URL}/delete/${id}`, {
         method: "DELETE",
       }).then((res) => res.json());
     },

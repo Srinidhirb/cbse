@@ -39,14 +39,32 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { EditIcon, DeleteIcon, ViewIcon } from "@chakra-ui/icons";
 import AdminNavbar from "./AdminNavbar";
 const categories = [
+  "Class 1 Math",
+  "Class 1 Science",
+  "Class 2 Math",
+  "Class 2 Science",
+  "Class 3 Math",
+  "Class 3 Science",
+  "Class 4 Math",
+  "Class 4 Science",
+  "Class 5 Math",
+  "Class 5 Science",
+  "Class 6 Math",
+  "Class 6 Science",
+  "Class 7 Math",
+  "Class 7 Science",
+  "Class 8 Math",
+  "Class 8 Science",
   "Class 9 Math",
-  "Class 10 Math",
   "Class 9 Science",
+  "Class 10 Math",
   "Class 10 Science",
 ];
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const addNote = async (formData) => {
-  const response = await fetch("http://localhost:5000/addNote", {
+  const response = await fetch(`${API_URL}/addNote`, {
     method: "POST",
     body: formData,
   });
@@ -56,7 +74,7 @@ const addNote = async (formData) => {
 
 const updateNote = async (category, id, formData) => {
   const response = await fetch(
-    `http://localhost:5000/updateNote/${category}/${id}`,
+    `${API_URL}/updateNote/${category}/${id}`,
     {
       method: "PUT",
       body: formData,
@@ -68,7 +86,7 @@ const updateNote = async (category, id, formData) => {
 
 const deleteNote = async (category, id) => {
   const response = await fetch(
-    `http://localhost:5000/deleteNote/${category}/${id}`,
+    `${API_URL}/deleteNote/${category}/${id}`,
     {
       method: "DELETE",
     }
@@ -79,7 +97,7 @@ const deleteNote = async (category, id) => {
 
 const fetchNotes = async (category) => {
   if (!category) return [];
-  const response = await fetch(`http://localhost:5000/notes/${category}`);
+  const response = await fetch(`${API_URL}/notes/${category}`);
   if (!response.ok) throw new Error("Failed to fetch notes");
   return response.json();
 };
@@ -431,7 +449,7 @@ const AddNote = () => {
                             // Ensure existing files are set in state
                             const fetchedFiles = note.files.map((file) => ({
                               name: file.split("/").pop(), // Extract file name
-                              url: `http://localhost:5000/${file}`, // Keep the full URL for preview
+                              url: `${API_URL}/${file}`, // Keep the full URL for preview
                             }));
 
                             setFiles(fetchedFiles);
@@ -501,7 +519,7 @@ const AddNote = () => {
                             colorScheme="blue"
                             onClick={() =>
                               window.open(
-                                `http://localhost:5000/${file}`,
+                                `${API_URL}/${file}`,
                                 "_blank"
                               )
                             }

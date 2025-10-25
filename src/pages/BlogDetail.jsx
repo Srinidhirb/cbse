@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import Loader from "../components/Loader";
 import {
   Box,
   Button,
@@ -13,6 +15,9 @@ import {
 import { useParams, useNavigate } from "react-router-dom";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
+
+const API_URL = import.meta.env.VITE_API_URL;
+
 function BlogDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -23,7 +28,7 @@ function BlogDetail() {
   useEffect(() => {
     const fetchBlog = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/blogs/${id}`);
+        const response = await fetch(`${API_URL}/blogs/${id}`);
         const data = await response.json();
         setBlog(data.blog);
       } catch (error) {
@@ -33,7 +38,7 @@ function BlogDetail() {
 
     const fetchRelatedBlogs = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/blogs`);
+        const response = await fetch(`${API_URL}/blogs`);
         const data = await response.json();
         // Filter out the current blog and shuffle the rest
         const others = data.blogs.filter((b) => b._id !== id);
@@ -54,7 +59,20 @@ function BlogDetail() {
     fetchRelatedBlogs();
   }, [id]);
 
-  if (!blog) return <Spinner size="xl" />;
+  if (loading) {
+    return (
+      <motion.div
+        key="loader"
+        className="fixed inset-0 flex items-center justify-center bg-white overflow-hidden"
+        initial={{ opacity: 1 }}
+        exit={{ opacity: 0, scale: 4 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1 }}
+      >
+        <Loader />
+      </motion.div>
+    );
+  }
 
   return (
     <>
@@ -65,7 +83,7 @@ function BlogDetail() {
       </Button>
 
       <Image
-        src={`http://localhost:5000/${blog.image}`}
+        src={`${API_URL}/${blog.image}`}
         alt={blog.title}
         borderRadius="xl"
         width="100%"
@@ -84,7 +102,7 @@ function BlogDetail() {
       {blog.file && (
         <Button
           as="a"
-          href={`http://localhost:5000/${blog.file}`}
+          href={`${API_URL}/${blog.file}`}
           download
           colorScheme="teal"
           mb={6}
@@ -115,7 +133,7 @@ function BlogDetail() {
               _hover={{ shadow: "md", transform: "scale(1.02)" }}
             >
               <Image
-                src={`http://localhost:5000/${item.image}`}
+                src={`${API_URL}/${item.image}`}
                 alt={item.title}
                 height="200px"
                 width="100%"

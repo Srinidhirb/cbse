@@ -12,7 +12,7 @@ const MyProfile = ({ userData }) => {
   useEffect(() => {
     const fetchReferralUsage = async () => {
       try {
-        const response = await fetch("http://localhost:5000/referral-usage");
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/referral-usage`);
         if (!response.ok)
           throw new Error("Failed to fetch referral usage data");
         const data = await response.json(); // data = { fullName: [list of names referred] }

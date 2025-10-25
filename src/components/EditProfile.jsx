@@ -11,6 +11,8 @@ import {
   Select,
 } from "@chakra-ui/react";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const EditProfile = ({ userData }) => {
   const [formData, setFormData] = useState({
     fullName: userData?.fullName || "",
@@ -31,7 +33,7 @@ const EditProfile = ({ userData }) => {
   const { mutate, isLoading } = useMutation({
     mutationFn: async () => {
       const res = await fetch(
-        `http://localhost:5000/users/${userData.emailAddress}`,
+        `${API_URL}/users/${userData.emailAddress}`,
         {
           method: "PATCH",
           headers: {

@@ -34,16 +34,17 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { DeleteIcon, ViewIcon } from "@chakra-ui/icons";
 import AdminNavbar from "./AdminNavbar";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 // Function to upload question papers
 const uploadQuestionPaper = async (formData) => {
-  const res = await fetch("http://localhost:5000/upload-question-paper", {
+  const res = await fetch(`${API_URL}/upload-question-paper`, {
     method: "POST",
     body: formData,
   });
 
   if (!res.ok) {
-    const error = await res.text();
-    throw new Error(error || "Upload failed");
+    throw new Error("Failed to upload question paper");
   }
 
   return res.json();
@@ -51,8 +52,10 @@ const uploadQuestionPaper = async (formData) => {
 
 // Function to fetch question papers
 const fetchQuestionPapers = async () => {
-  const response = await fetch("http://localhost:5000/question-papers");
-  if (!response.ok) throw new Error("Failed to fetch question papers");
+  const response = await fetch(`${API_URL}/question-papers`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch question papers");
+  }
   return response.json();
 };
 
@@ -148,7 +151,7 @@ const QuestionPaperUpload = () => {
   const handleDelete = async (paperId) => {
     try {
       // Call API to delete the paper using fetch
-      const response = await fetch(`http://localhost:5000/delete-question-paper/${paperId}`, {
+      const response = await fetch(`${API_URL}/delete-question-paper/${paperId}`, {
         method: 'DELETE',
       });
   
@@ -330,7 +333,7 @@ const QuestionPaperUpload = () => {
               {viewPaper ? (
                 <Link
                   color="blue.500"
-                  href={`http://localhost:5000/${viewPaper.file}`}
+                  href={`${API_URL}/${viewPaper.file}`}
                   isExternal
                 >
                   Veiw {viewPaper.name}

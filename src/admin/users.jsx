@@ -16,6 +16,10 @@ import {
 } from "@chakra-ui/react";
 import AdminNavbar from "./AdminNavbar";
 
+// Import dotenv to load environment variables
+import dotenv from "dotenv";
+dotenv.config();
+
 function Users() {
   const [users, setUsers] = useState([]);
   const [referralUsage, setReferralUsage] = useState({});
@@ -29,7 +33,7 @@ function Users() {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:5000/users");
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/users`);
         if (!response.ok) throw new Error("Failed to fetch users");
 
         const data = await response.json();
@@ -37,7 +41,7 @@ function Users() {
 
         // Fetch referral usage details
         const referralResponse = await fetch(
-          "http://localhost:5000/referral-usage"
+          `${import.meta.env.VITE_API_URL}/referral-usage`
         );
         if (!referralResponse.ok)
           throw new Error("Failed to fetch referral usage");

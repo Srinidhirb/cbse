@@ -6,16 +6,35 @@ import bodyParser from "body-parser";
 import path from "path";
 import fs from "fs";
 import bcrypt from "bcryptjs";
-const app = express();
+import dotenv from "dotenv";
+import { body, validationResult } from "express-validator";
+import rateLimit from "express-rate-limit";
 import nodemailer from "nodemailer";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+dotenv.config(); // Load environment variables
 
+const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+console.log("MONGO_URI:", process.env.MONGO_URI);
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use("/uploads", express.static("uploads")); // Serve uploaded files statically
 
+// Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+});
+app.use(limiter);
+
 // Connect to MongoDB
-mongoose.connect("mongodb://localhost:27017/CBSE", {
+const API_URL = process.env.MONGO_URI;
+
+mongoose.connect(API_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -34,16 +53,26 @@ const VideoSchema = new mongoose.Schema({
 const VideoModel = mongoose.model("Videos_url", VideoSchema);
 
 // ✅ API Route - Add Video URL
-app.post("/add", async (req, res) => {
-  try {
-    const { url } = req.body;
-    const newVideo = new VideoModel({ url });
-    await newVideo.save();
-    res.status(201).json({ message: "✅ Video added successfully", data: newVideo });
-  } catch (error) {
-    res.status(500).json({ error: "❌ Error saving video URL" });
+app.post(
+  "/add",
+  body("url").isURL().withMessage("Invalid URL"),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    try {
+      const { url } = req.body;
+      const newVideo = new VideoModel({ url });
+      await newVideo.save();
+      res
+        .status(201)
+        .json({ message: "✅ Video added successfully", data: newVideo });
+    } catch (error) {
+      res.status(500).json({ error: "❌ Error saving video URL" });
+    }
   }
-});
+);
 
 // ✅ API Route - Fetch All Video URLs
 app.get("/videos", async (req, res) => {
@@ -60,33 +89,58 @@ app.get("/videos", async (req, res) => {
 // Define schemas and models for different categories
 const noteSchema = new mongoose.Schema({
   title: String,
-  description: String,  // ✅ New Field
-  youtubeLinks: [String], // ✅ New Field (Array of URLs)
-
+  description: String,
+  youtubeLinks: [String],
   files: [String],
 });
 
-
+// Add models for Class 1-10 Math and Science
+const Class1Math = mongoose.model("Class1Math", noteSchema);
+const Class1Science = mongoose.model("Class1Science", noteSchema);
+const Class2Math = mongoose.model("Class2Math", noteSchema);
+const Class2Science = mongoose.model("Class2Science", noteSchema);
+const Class3Math = mongoose.model("Class3Math", noteSchema);
+const Class3Science = mongoose.model("Class3Science", noteSchema);
+const Class4Math = mongoose.model("Class4Math", noteSchema);
+const Class4Science = mongoose.model("Class4Science", noteSchema);
+const Class5Math = mongoose.model("Class5Math", noteSchema);
+const Class5Science = mongoose.model("Class5Science", noteSchema);
+const Class6Math = mongoose.model("Class6Math", noteSchema);
+const Class6Science = mongoose.model("Class6Science", noteSchema);
+const Class7Math = mongoose.model("Class7Math", noteSchema);
+const Class7Science = mongoose.model("Class7Science", noteSchema);
+const Class8Math = mongoose.model("Class8Math", noteSchema);
+const Class8Science = mongoose.model("Class8Science", noteSchema);
 const Class9Math = mongoose.model("Class9Math", noteSchema);
-const Class10Math = mongoose.model("Class10Math", noteSchema);
 const Class9Science = mongoose.model("Class9Science", noteSchema);
+const Class10Math = mongoose.model("Class10Math", noteSchema);
 const Class10Science = mongoose.model("Class10Science", noteSchema);
 
-// Function to get the correct model based on category
-const getModel = (category) => {
-  switch (category) {
-    case "Class 9 Math":
-      return Class9Math;
-    case "Class 10 Math":
-      return Class10Math;
-    case "Class 9 Science":
-      return Class9Science;
-    case "Class 10 Science":
-      return Class10Science;
-    default:
-      return null;
-  }
+// Update getModel to support all categories
+const models = {
+  "Class 1 Math": Class1Math,
+  "Class 1 Science": Class1Science,
+  "Class 2 Math": Class2Math,
+  "Class 2 Science": Class2Science,
+  "Class 3 Math": Class3Math,
+  "Class 3 Science": Class3Science,
+  "Class 4 Math": Class4Math,
+  "Class 4 Science": Class4Science,
+  "Class 5 Math": Class5Math,
+  "Class 5 Science": Class5Science,
+  "Class 6 Math": Class6Math,
+  "Class 6 Science": Class6Science,
+  "Class 7 Math": Class7Math,
+  "Class 7 Science": Class7Science,
+  "Class 8 Math": Class8Math,
+  "Class 8 Science": Class8Science,
+  "Class 9 Math": Class9Math,
+  "Class 9 Science": Class9Science,
+  "Class 10 Math": Class10Math,
+  "Class 10 Science": Class10Science,
 };
+
+const getModel = (category) => models[category] || null;
 
 // ✅ Multer Storage Configuration
 const storage = multer.diskStorage({
@@ -102,36 +156,62 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
-
-// ✅ API Route - Add Note with File Upload
-app.post("/addNote", upload.fields([{ name: "files", maxCount: 5 }]), async (req, res) => {
-
-  try {
-    const { category, title, description, youtubeLinks } = req.body;
-
-    const Model = getModel(category);
-    if (!Model) return res.status(400).json({ error: "❌ Invalid category" });
-
-    const filePaths = req.files.files ? req.files.files.map((file) => file.path) : [];
-
-
-    const newNote = new Model({
-      title,
-      description,
-      youtubeLinks: youtubeLinks ? youtubeLinks.split(",") : [], // Convert string to array
-
-
-      files: filePaths,
-    });
-
-    await newNote.save();
-    res.status(201).json({ message: "✅ Note added successfully", data: newNote });
-  } catch (error) {
-    res.status(500).json({ error: "❌ Error saving note" });
-  }
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+    if (!allowedTypes.includes(file.mimetype)) {
+      return cb(new Error("Invalid file type"));
+    }
+    cb(null, true);
+  },
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
 });
 
+// Utility function to validate YouTube URLs
+const isValidYouTubeUrl = (url) => {
+  const regex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+  return regex.test(url);
+};
+
+// ✅ API Route - Add Note with File Upload
+app.post(
+  "/addNote",
+  upload.fields([{ name: "files", maxCount: 5 }]),
+  async (req, res) => {
+    try {
+      const { category, title, description, youtubeLinks } = req.body;
+
+      const Model = getModel(category);
+      if (!Model) return res.status(400).json({ error: "❌ Invalid category" });
+
+      const filePaths = req.files.files
+        ? req.files.files.map((file) => file.path)
+        : [];
+
+      // Validate and sanitize YouTube links
+      const sanitizedLinks = youtubeLinks
+        ? youtubeLinks.split(",").filter(isValidYouTubeUrl)
+        : [];
+
+      if (youtubeLinks && sanitizedLinks.length !== youtubeLinks.split(",").length) {
+        return res.status(400).json({ error: "❌ One or more YouTube links are invalid" });
+      }
+
+      const newNote = new Model({
+        title,
+        description,
+        youtubeLinks: sanitizedLinks,
+        files: filePaths,
+      });
+
+      await newNote.save();
+      res.status(201).json({ message: "✅ Note added successfully", data: newNote });
+    } catch (error) {
+      res.status(500).json({ error: "❌ Error saving note" });
+    }
+  }
+);
 
 // ✅ API Route - Fetch Notes by Category
 app.get("/notes/:category", async (req, res) => {
@@ -162,32 +242,49 @@ app.get("/note/:category/:id", async (req, res) => {
 });
 
 // ✅ API Route - Update Note (Supports File Updates)
-app.put("/updateNote/:category/:id", upload.array("files", 5), async (req, res) => {
-  try {
-    const { category, id } = req.params;
-    const { title, description, youtubeLinks } = req.body; // ✅ Extract from body
+app.put(
+  "/updateNote/:category/:id",
+  upload.array("files", 5),
+  async (req, res) => {
+    try {
+      const { category, id } = req.params;
+      const { title, description, youtubeLinks } = req.body;
 
-    const Model = getModel(category);
-    if (!Model) return res.status(400).json({ error: "❌ Invalid category" });
+      const Model = getModel(category);
+      if (!Model) return res.status(400).json({ error: "❌ Invalid category" });
 
-    let note = await Model.findById(id);
-    if (!note) return res.status(404).json({ error: "❌ Note not found" });
+      let note = await Model.findById(id);
+      if (!note) return res.status(404).json({ error: "❌ Note not found" });
 
-    const filePaths = req.files.length > 0 ? req.files.map((file) => file.path) : note.files;
+      const filePaths =
+        req.files.length > 0 ? req.files.map((file) => file.path) : note.files;
 
-    // ✅ Update fields safely
-    if (title) note.title = title;
-    if (description) note.description = description;
-    if (youtubeLinks) note.youtubeLinks = youtubeLinks.split(",");
-    note.files = filePaths;
+      // Validate and sanitize YouTube links
+      const sanitizedLinks = youtubeLinks
+        ? youtubeLinks.split(",").filter(isValidYouTubeUrl)
+        : [];
 
-    await note.save();
-    res.status(200).json({ message: "✅ Note updated successfully", data: note });
-  } catch (error) {
-    console.error("❌ Error updating note:", error);
-    res.status(500).json({ error: "❌ Error updating note", details: error.message });
+      if (youtubeLinks && sanitizedLinks.length !== youtubeLinks.split(",").length) {
+        return res.status(400).json({ error: "❌ One or more YouTube links are invalid" });
+      }
+
+      // Update fields safely
+      if (title) note.title = title;
+      if (description) note.description = description;
+      if (youtubeLinks) note.youtubeLinks = sanitizedLinks;
+      note.files = filePaths;
+
+      await note.save();
+      res.status(200).json({ message: "✅ Note updated successfully", data: note });
+    } catch (error) {
+      console.error("❌ Error updating note:", error);
+      res.status(500).json({
+        error: "❌ Error updating note",
+        details: error.message,
+      });
+    }
   }
-});
+);
 
 app.get("/notes/:category/random", async (req, res) => {
   try {
@@ -198,14 +295,13 @@ app.get("/notes/:category/random", async (req, res) => {
     const randomNotes = await Model.aggregate([{ $sample: { size: 12 } }]);
 
     // Add the category to each note before sending
-    const withCategory = randomNotes.map(note => ({ ...note, category }));
+    const withCategory = randomNotes.map((note) => ({ ...note, category }));
 
     res.status(200).json(withCategory);
   } catch (error) {
     res.status(500).json({ error: "❌ Error fetching random notes" });
   }
 });
-
 
 app.delete("/deleteNote/:category/:id", async (req, res) => {
   try {

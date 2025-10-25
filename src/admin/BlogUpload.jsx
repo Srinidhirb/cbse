@@ -20,6 +20,9 @@ import {
 import AdminNavbar from "./AdminNavbar";
 import { EditIcon, DeleteIcon, ViewIcon } from "@chakra-ui/icons";
 
+// Replace process.env with import.meta.env
+const API_URL = import.meta.env.VITE_API_URL;
+
 function BlogUpload() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -35,7 +38,7 @@ function BlogUpload() {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await fetch("http://localhost:5000/blogs");
+        const response = await fetch(`${API_URL}/blogs`);
         const data = await response.json();
 
         // Log the entire response to inspect the structure
@@ -112,8 +115,8 @@ function BlogUpload() {
 
     try {
       const url = isEditing
-        ? `http://localhost:5000/blogs/${editingBlog._id}` // Ensure _id is accessed correctly
-        : "http://localhost:5000/blogs/upload";
+        ? `${API_URL}/blogs/${editingBlog._id}` // Ensure _id is accessed correctly
+        : `${API_URL}/blogs/upload`;
 
       const method = isEditing ? "PUT" : "POST";
 
@@ -171,7 +174,7 @@ function BlogUpload() {
 
     // Set preview using full URL if image exists
     if (blog.image) {
-      setPreview(`http://localhost:5000/${blog.image.replace(/\\/g, "/")}`);
+      setPreview(`${API_URL}/${blog.image.replace(/\\/g, "/")}`);
     } else {
       setPreview(null);
     }
@@ -179,7 +182,7 @@ function BlogUpload() {
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/blogs/${id}`, {
+      const response = await fetch(`${API_URL}/blogs/${id}`, {
         method: "DELETE",
       });
       if (!response.ok) throw new Error("Failed to delete blog");

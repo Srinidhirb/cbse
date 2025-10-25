@@ -17,11 +17,16 @@ import {
   AlertDescription,
   CloseButton,
 } from "@chakra-ui/react";
+import { motion } from "framer-motion";
+import dotenv from "dotenv";
+
 import StudyMaterialSection from "../components/StudyMaterialSection";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import Loader from "../components/Loader";
 import { useAuth } from "../context/AuthContext";
+
+dotenv.config();
 
 const NoteDetail = () => {
   const { category, id } = useParams();
@@ -35,19 +40,26 @@ const NoteDetail = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchNote = async () => {
+    const fetchNoteSequentially = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/note/${category}/${id}`
+          `${process.env.API_URL}/note/${category}/${id}`
         );
         if (!response.ok) throw new Error("Failed to fetch note");
         const data = await response.json();
         setNote(data);
 
-        if (!userEmail) {
+        // Only require login for Class 9 and Class 10
+        const requiresLogin =
+          category === "Class 9 Math" ||
+          category === "Class 9 Science" ||
+          category === "Class 10 Math" ||
+          category === "Class 10 Science";
+
+        if (requiresLogin && !userEmail) {
           setShowAlert(true);
         } else {
-          setAllowAccess(true); // user is logged in
+          setAllowAccess(true);
         }
       } catch (err) {
         setError("Failed to load the note. Please try again later.");
@@ -56,7 +68,7 @@ const NoteDetail = () => {
       }
     };
 
-    fetchNote();
+    fetchNoteSequentially();
   }, [category, id, userEmail]);
 
   const handleLoginRedirect = () => {
@@ -69,7 +81,20 @@ const NoteDetail = () => {
     setAllowAccess(false); // continue without login
   };
 
-  if (loading) return <Loader />;
+  if (loading) {
+    return (
+      <motion.div
+        key="loader"
+        className="fixed inset-0 flex items-center justify-center bg-white overflow-hidden"
+        initial={{ opacity: 1 }}
+        exit={{ opacity: 0, scale: 4 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1 }}
+      >
+        <Loader />
+      </motion.div>
+    );
+  }
 
   return (
     <>

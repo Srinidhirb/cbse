@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext";
 import { Spinner } from "@chakra-ui/react";
+import { motion } from "framer-motion";
+import Loader from "../components/Loader";
 import Nav from "../components/Nav";
 import dashboard from "../assets/dashboard.png";
 import MyProfile from "../components/MyProfile";
@@ -16,12 +18,24 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("profile");
 
   useEffect(() => {
-    if (userEmail) {
-      fetch(`http://localhost:5000/user/${userEmail}`)
-        .then((res) => res.json())
-        .then((data) => setUserData(data))
-        .catch((err) => console.error("Error fetching user data:", err));
-    }
+    const fetchUserData = async () => {
+      try {
+        if (userEmail) {
+          const res = await fetch(
+            `${import.meta.env.VITE_API_URL}/user/${userEmail}`
+          );
+          if (!res.ok) {
+            throw new Error("Failed to fetch user data");
+          }
+          const data = await res.json();
+          setUserData(data);
+        }
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+      }
+    };
+
+    fetchUserData();
   }, [userEmail]);
 
   const {
@@ -31,7 +45,7 @@ const Dashboard = () => {
   } = useQuery({
     queryKey: ["videos"],
     queryFn: async () => {
-      const res = await fetch("http://localhost:5000/videos");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/videos`);
       if (!res.ok) throw new Error("Failed to fetch videos");
       return res.json();
     },
@@ -114,9 +128,16 @@ const Dashboard = () => {
         {/* Dynamic Component Rendering */}
         <div className="flex flex-col md:flex-row justify-center gap-6 mt-7 items-start">
           {isLoading ? (
-            <div className="flex items-center justify-center w-full">
-              <Spinner size="xl" color="blue.500" />
-            </div>
+            <motion.div
+              key="loader"
+              className="fixed inset-0 flex items-center justify-center bg-white overflow-hidden"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0, scale: 4 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1 }}
+            >
+              <Loader />
+            </motion.div>
           ) : (
             <>
               <div className="w-full md:w-1/2">{renderActiveTab()}</div>
