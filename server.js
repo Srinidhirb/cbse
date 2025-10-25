@@ -13,6 +13,8 @@ import nodemailer from "nodemailer";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 dotenv.config(); // Load environment variables
+import { PDFDocument } from "pdf-lib";
+
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -22,7 +24,7 @@ console.log("MONGO_URI:", process.env.MONGO_URI);
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
-app.use("/uploads", express.static("uploads")); // Serve uploaded files statically
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Rate Limiting
 const limiter = rateLimit({
@@ -86,61 +88,17 @@ app.get("/videos", async (req, res) => {
 
 /* ---------------- New Notes Management Functionality ---------------- */
 
-// Define schemas and models for different categories
+// Unified Note Schema
 const noteSchema = new mongoose.Schema({
+  class: { type: String, required: true },
+  subject: { type: String, required: true },
   title: String,
   description: String,
   youtubeLinks: [String],
   files: [String],
 });
 
-// Add models for Class 1-10 Math and Science
-const Class1Math = mongoose.model("Class1Math", noteSchema);
-const Class1Science = mongoose.model("Class1Science", noteSchema);
-const Class2Math = mongoose.model("Class2Math", noteSchema);
-const Class2Science = mongoose.model("Class2Science", noteSchema);
-const Class3Math = mongoose.model("Class3Math", noteSchema);
-const Class3Science = mongoose.model("Class3Science", noteSchema);
-const Class4Math = mongoose.model("Class4Math", noteSchema);
-const Class4Science = mongoose.model("Class4Science", noteSchema);
-const Class5Math = mongoose.model("Class5Math", noteSchema);
-const Class5Science = mongoose.model("Class5Science", noteSchema);
-const Class6Math = mongoose.model("Class6Math", noteSchema);
-const Class6Science = mongoose.model("Class6Science", noteSchema);
-const Class7Math = mongoose.model("Class7Math", noteSchema);
-const Class7Science = mongoose.model("Class7Science", noteSchema);
-const Class8Math = mongoose.model("Class8Math", noteSchema);
-const Class8Science = mongoose.model("Class8Science", noteSchema);
-const Class9Math = mongoose.model("Class9Math", noteSchema);
-const Class9Science = mongoose.model("Class9Science", noteSchema);
-const Class10Math = mongoose.model("Class10Math", noteSchema);
-const Class10Science = mongoose.model("Class10Science", noteSchema);
-
-// Update getModel to support all categories
-const models = {
-  "Class 1 Math": Class1Math,
-  "Class 1 Science": Class1Science,
-  "Class 2 Math": Class2Math,
-  "Class 2 Science": Class2Science,
-  "Class 3 Math": Class3Math,
-  "Class 3 Science": Class3Science,
-  "Class 4 Math": Class4Math,
-  "Class 4 Science": Class4Science,
-  "Class 5 Math": Class5Math,
-  "Class 5 Science": Class5Science,
-  "Class 6 Math": Class6Math,
-  "Class 6 Science": Class6Science,
-  "Class 7 Math": Class7Math,
-  "Class 7 Science": Class7Science,
-  "Class 8 Math": Class8Math,
-  "Class 8 Science": Class8Science,
-  "Class 9 Math": Class9Math,
-  "Class 9 Science": Class9Science,
-  "Class 10 Math": Class10Math,
-  "Class 10 Science": Class10Science,
-};
-
-const getModel = (category) => models[category] || null;
+const Note = mongoose.model("Note", noteSchema);
 
 // ✅ Multer Storage Configuration
 const storage = multer.diskStorage({
@@ -180,10 +138,12 @@ app.post(
   upload.fields([{ name: "files", maxCount: 5 }]),
   async (req, res) => {
     try {
-      const { category, title, description, youtubeLinks } = req.body;
+      const { class: noteClass, subject, title, description, youtubeLinks } = req.body;
 
-      const Model = getModel(category);
-      if (!Model) return res.status(400).json({ error: "❌ Invalid category" });
+      // Validate required fields
+      if (!noteClass || !subject) {
+        return res.status(400).json({ error: "❌ 'class' and 'subject' fields are required" });
+      }
 
       const filePaths = req.files.files
         ? req.files.files.map((file) => file.path)
@@ -198,7 +158,9 @@ app.post(
         return res.status(400).json({ error: "❌ One or more YouTube links are invalid" });
       }
 
-      const newNote = new Model({
+      const newNote = new Note({
+        class: noteClass,
+        subject,
         title,
         description,
         youtubeLinks: sanitizedLinks,
@@ -208,7 +170,8 @@ app.post(
       await newNote.save();
       res.status(201).json({ message: "✅ Note added successfully", data: newNote });
     } catch (error) {
-      res.status(500).json({ error: "❌ Error saving note" });
+      console.error("❌ Error adding note:", error);
+      res.status(500).json({ error: "❌ Error adding note" });
     }
   }
 );
@@ -217,10 +180,7 @@ app.post(
 app.get("/notes/:category", async (req, res) => {
   try {
     const { category } = req.params;
-    const Model = getModel(category);
-    if (!Model) return res.status(400).json({ error: "❌ Invalid category" });
-
-    const notes = await Model.find();
+    const notes = await Note.find({ category });
     res.status(200).json(notes);
   } catch (error) {
     res.status(500).json({ error: "❌ Error fetching notes" });
@@ -229,10 +189,7 @@ app.get("/notes/:category", async (req, res) => {
 app.get("/note/:category/:id", async (req, res) => {
   try {
     const { category, id } = req.params;
-    const Model = getModel(category);
-    if (!Model) return res.status(400).json({ error: "❌ Invalid category" });
-
-    const note = await Model.findById(id);
+    const note = await Note.findById(id);
     if (!note) return res.status(404).json({ error: "❌ Note not found" });
 
     res.status(200).json(note);
@@ -241,19 +198,16 @@ app.get("/note/:category/:id", async (req, res) => {
   }
 });
 
-// ✅ API Route - Update Note (Supports File Updates)
+// ✅ API Route - Update Note
 app.put(
-  "/updateNote/:category/:id",
+  "/updateNote/:id",
   upload.array("files", 5),
   async (req, res) => {
     try {
-      const { category, id } = req.params;
-      const { title, description, youtubeLinks } = req.body;
+      const { id } = req.params;
+      const { title, description, youtubeLinks, class: noteClass, subject } = req.body;
 
-      const Model = getModel(category);
-      if (!Model) return res.status(400).json({ error: "❌ Invalid category" });
-
-      let note = await Model.findById(id);
+      let note = await Note.findById(id);
       if (!note) return res.status(404).json({ error: "❌ Note not found" });
 
       const filePaths =
@@ -272,16 +226,15 @@ app.put(
       if (title) note.title = title;
       if (description) note.description = description;
       if (youtubeLinks) note.youtubeLinks = sanitizedLinks;
+      if (noteClass) note.class = noteClass;
+      if (subject) note.subject = subject;
       note.files = filePaths;
 
       await note.save();
       res.status(200).json({ message: "✅ Note updated successfully", data: note });
     } catch (error) {
       console.error("❌ Error updating note:", error);
-      res.status(500).json({
-        error: "❌ Error updating note",
-        details: error.message,
-      });
+      res.status(500).json({ error: "❌ Error updating note" });
     }
   }
 );
@@ -289,10 +242,7 @@ app.put(
 app.get("/notes/:category/random", async (req, res) => {
   try {
     const { category } = req.params;
-    const Model = getModel(category);
-    if (!Model) return res.status(400).json({ error: "❌ Invalid category" });
-
-    const randomNotes = await Model.aggregate([{ $sample: { size: 12 } }]);
+    const randomNotes = await Note.aggregate([{ $sample: { size: 12 } }]);
 
     // Add the category to each note before sending
     const withCategory = randomNotes.map((note) => ({ ...note, category }));
@@ -303,15 +253,17 @@ app.get("/notes/:category/random", async (req, res) => {
   }
 });
 
-app.delete("/deleteNote/:category/:id", async (req, res) => {
+// ✅ API Route - Delete Note
+app.delete("/deleteNote/:id", async (req, res) => {
   try {
-    const { category, id } = req.params;
-    const Model = getModel(category);
-    if (!Model) return res.status(400).json({ error: "❌ Invalid category" });
+    const { id } = req.params;
 
-    await Model.findByIdAndDelete(id);
+    const note = await Note.findByIdAndDelete(id);
+    if (!note) return res.status(404).json({ error: "❌ Note not found" });
+
     res.status(200).json({ message: "✅ Note deleted successfully" });
   } catch (error) {
+    console.error("❌ Error deleting note:", error);
     res.status(500).json({ error: "❌ Error deleting note" });
   }
 });
@@ -809,6 +761,80 @@ app.delete("/blogs/:id", async (req, res) => {
   } catch (err) {
     console.error("Error deleting blog:", err);
     res.status(500).json({ error: "Error deleting blog" });
+  }
+});
+
+// ✅ API Route - Get Notes
+app.get("/notes", async (req, res) => {
+  try {
+    const { class: noteClass, subject } = req.query;
+
+    const filter = {};
+    if (noteClass) filter.class = noteClass;
+    if (subject) filter.subject = subject;
+
+    const notes = await Note.find(filter);
+    res.status(200).json({ message: "✅ Notes fetched successfully", data: notes });
+  } catch (error) {
+    console.error("❌ Error fetching notes:", error);
+    res.status(500).json({ error: "❌ Error fetching notes" });
+  }
+});
+
+// ✅ API Route - Get Note by Class and ID
+app.get("/note/:class/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const note = await Note.findById(id);
+    if (!note) {
+      return res.status(404).json({ error: "❌ Note not found" });
+    }
+
+    res.status(200).json({ message: "✅ Note fetched successfully", data: note });
+  } catch (error) {
+    console.error("❌ Error fetching note:", error);
+    res.status(500).json({ error: "❌ Error fetching note" });
+  }
+});
+
+app.get("/serve-pdf/:filename", async (req, res) => {
+  try {
+    const decodedFilename = decodeURIComponent(req.params.filename);
+    const isLoggedIn = req.query.logged === "true";
+    const filePath = path.join(__dirname, "uploads", decodedFilename);
+
+    console.log("📄 Serving file:", filePath);
+    console.log("👤 Logged in:", isLoggedIn);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: "❌ File not found" });
+    }
+
+    const pdfBytes = fs.readFileSync(filePath);
+
+    if (!isLoggedIn) {
+      console.log("⚙️ Generating limited PDF preview...");
+      const pdfDoc = await PDFDocument.load(pdfBytes);
+      const totalPages = pdfDoc.getPageCount();
+      const newPdf = await PDFDocument.create();
+
+      // Copy only the first 2 pages (or 1 if there’s only one)
+      const pagesToCopy = totalPages > 2 ? [0, 1] : [0];
+      const copiedPages = await newPdf.copyPages(pdfDoc, pagesToCopy);
+      copiedPages.forEach((page) => newPdf.addPage(page));
+
+      const newPdfBytes = await newPdf.save();
+      res.setHeader("Content-Type", "application/pdf");
+      return res.status(200).send(Buffer.from(newPdfBytes));
+    }
+
+    // Full PDF for logged-in users
+    res.setHeader("Content-Type", "application/pdf");
+    res.status(200).sendFile(filePath);
+  } catch (err) {
+    console.error("❌ Error serving PDF:", err);
+    res.status(500).json({ error: "Error serving PDF", details: err.message });
   }
 });
 

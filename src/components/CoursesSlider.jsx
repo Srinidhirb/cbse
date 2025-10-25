@@ -30,7 +30,7 @@ function CoursesSlider() {
   const courseData = [
     {
       image: Courses1,
-      buttonText: "View Videos",
+    
       heading: "Video Lectures",
       features: [
         {
@@ -49,7 +49,7 @@ function CoursesSlider() {
     },
     {
       image: Courses2,
-      buttonText: "View Notes",
+      
       heading: "Comprehensive Notes",
       features: [
         {
@@ -68,7 +68,7 @@ function CoursesSlider() {
     },
     {
       image: Courses3,
-      buttonText: "View Test",
+      
       heading: "Practice Exams",
       features: [
         {
@@ -99,11 +99,7 @@ function CoursesSlider() {
                   <div className="w-60 md:w-80 rounded-lg overflow-hidden">
                     <img src={course.image} alt="" className="w-full h-auto" />
                   </div>
-                  <div className="mt-4 text-center">
-                    <button className="bg-lightblue text-black py-2 px-4 rounded-md shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">
-                      {course.buttonText}
-                    </button>
-                  </div>
+                 
                 </div>
 
                 {/* Text Content */}

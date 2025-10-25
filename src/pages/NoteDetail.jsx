@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -43,7 +43,7 @@ const NoteDetail = () => {
     const fetchNoteSequentially = async () => {
       try {
         const response = await fetch(
-          `${process.env.API_URL}/note/${category}/${id}`
+          `${import.meta.env.VITE_API_URL}/note/${category}/${id}`
         );
         if (!response.ok) throw new Error("Failed to fetch note");
         const data = await response.json();
@@ -58,6 +58,7 @@ const NoteDetail = () => {
 
         if (requiresLogin && !userEmail) {
           setShowAlert(true);
+          setAllowAccess(false); // Ensure access is restricted until explicitly allowed
         } else {
           setAllowAccess(true);
         }
@@ -78,7 +79,7 @@ const NoteDetail = () => {
 
   const handleContinue = () => {
     setShowAlert(false);
-    setAllowAccess(false); // continue without login
+    setAllowAccess(true); // allow limited access
   };
 
   if (loading) {
@@ -102,14 +103,13 @@ const NoteDetail = () => {
       <Box className="container" mx="auto" px={10} mt="6" py={[4, 6, 8]}>
         {error && (
           <div className="flex h-52 justify-center items-center">
-          <Alert status="error" mb={6} borderRadius="md">
-            <AlertIcon />
-            <Box flex="1">
-              <AlertTitle>Error!</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Box>
-           
-          </Alert>
+            <Alert status="error" mb={6} borderRadius="md">
+              <AlertIcon />
+              <Box flex="1">
+                <AlertTitle>Error!</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Box>
+            </Alert>
           </div>
         )}
 
@@ -142,8 +142,29 @@ const NoteDetail = () => {
               youtubeLinks={note.youtubeLinks}
               attachments={note.files}
               chapter={note.title}
-              isLoggedIn={userEmail || allowAccess}
+              isLoggedIn={!!userEmail}
+              allowAccess={allowAccess}
             />
+
+            {note.youtubeLinks.length > 0 && (
+              <div className="mb-4">
+                <Text className="text-lg font-semibold">YouTube Links</Text>
+                <ul>
+                  {note.youtubeLinks.map((link, index) => (
+                    <li key={index}>
+                      <a
+                        href={link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500"
+                      >
+                        {link}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </Box>
         )}
       </Box>
@@ -162,8 +183,8 @@ const NoteDetail = () => {
               Login Required
             </AlertDialogHeader>
             <AlertDialogBody>
-              These contents are only accessible when logged in. Please login
-              or continue with limited access.
+              These contents are only accessible when logged in. Please login or
+              continue with limited access.
             </AlertDialogBody>
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={handleContinue}>

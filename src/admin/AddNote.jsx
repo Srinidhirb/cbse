@@ -38,28 +38,20 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { EditIcon, DeleteIcon, ViewIcon } from "@chakra-ui/icons";
 import AdminNavbar from "./AdminNavbar";
-const categories = [
-  "Class 1 Math",
-  "Class 1 Science",
-  "Class 2 Math",
-  "Class 2 Science",
-  "Class 3 Math",
-  "Class 3 Science",
-  "Class 4 Math",
-  "Class 4 Science",
-  "Class 5 Math",
-  "Class 5 Science",
-  "Class 6 Math",
-  "Class 6 Science",
-  "Class 7 Math",
-  "Class 7 Science",
-  "Class 8 Math",
-  "Class 8 Science",
-  "Class 9 Math",
-  "Class 9 Science",
-  "Class 10 Math",
-  "Class 10 Science",
+const classes = [
+  "Class 1",
+  "Class 2",
+  "Class 3",
+  "Class 4",
+  "Class 5",
+  "Class 6",
+  "Class 7",
+  "Class 8",
+  "Class 9",
+  "Class 10",
 ];
+
+const subjects = ["Math", "Science"];
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -72,40 +64,41 @@ const addNote = async (formData) => {
   return response.json();
 };
 
-const updateNote = async (category, id, formData) => {
-  const response = await fetch(
-    `${API_URL}/updateNote/${category}/${id}`,
-    {
-      method: "PUT",
-      body: formData,
-    }
-  );
+const updateNote = async (id, formData) => {
+  const response = await fetch(`${API_URL}/updateNote/${id}`, {
+    method: "PUT",
+    body: formData,
+  });
   if (!response.ok) throw new Error("Failed to update note");
   return response.json();
 };
 
-const deleteNote = async (category, id) => {
-  const response = await fetch(
-    `${API_URL}/deleteNote/${category}/${id}`,
-    {
-      method: "DELETE",
-    }
-  );
+const deleteNote = async (id) => {
+  const response = await fetch(`${API_URL}/deleteNote/${id}`, {
+    method: "DELETE",
+  });
   if (!response.ok) throw new Error("Failed to delete note");
   return response.json();
 };
 
-const fetchNotes = async (category) => {
-  if (!category) return [];
-  const response = await fetch(`${API_URL}/notes/${category}`);
+const fetchNotes = async (noteClass, subject) => {
+  const queryParams = new URLSearchParams();
+  if (noteClass) queryParams.append("class", noteClass);
+  if (subject) queryParams.append("subject", subject);
+
+  const response = await fetch(`${API_URL}/notes?${queryParams.toString()}`);
   if (!response.ok) throw new Error("Failed to fetch notes");
-  return response.json();
+
+  const result = await response.json();
+  return Array.isArray(result.data) ? result.data : []; // ✅ return the actual notes array
 };
+
 
 const AddNote = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
-  const [category, setCategory] = useState("");
+  const [noteClass, setNoteClass] = useState("");
+  const [subject, setSubject] = useState("");
   const [title, setTitle] = useState("");
   const [files, setFiles] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -121,15 +114,15 @@ const AddNote = () => {
   const [initialTitle, setInitialTitle] = useState("");
   const [initialFiles, setInitialFiles] = useState([]);
   const { data: notes = [], refetch } = useQuery({
-    queryKey: ["notes", category],
-    queryFn: () => fetchNotes(category),
-    enabled: !!category,
+    queryKey: ["notes", noteClass, subject],
+    queryFn: () => fetchNotes(noteClass, subject),
+    enabled: !!noteClass && !!subject,
   });
 
   const addMutation = useMutation({
     mutationFn: addNote,
     onSuccess: () => {
-      queryClient.invalidateQueries(["notes", category]);
+      queryClient.invalidateQueries(["notes", noteClass, subject]);
       toast({
         title: "Note added successfully!",
         status: "success",
@@ -142,10 +135,9 @@ const AddNote = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ category, id, formData }) =>
-      updateNote(category, id, formData),
+    mutationFn: ({ id, formData }) => updateNote(id, formData),
     onSuccess: () => {
-      queryClient.invalidateQueries(["notes", category]);
+      queryClient.invalidateQueries(["notes", noteClass, subject]);
       toast({
         title: "Note updated successfully!",
         status: "success",
@@ -158,9 +150,9 @@ const AddNote = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: ({ category, id }) => deleteNote(category, id),
+    mutationFn: (id) => deleteNote(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(["notes", category]);
+      queryClient.invalidateQueries(["notes", noteClass, subject]);
       toast({
         title: "Note deleted successfully!",
         status: "success",
@@ -206,7 +198,7 @@ const AddNote = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!category || !title || files.length === 0) {
+    if (!noteClass || !subject || !title || files.length === 0) {
       toast({
         title: "Please fill in all fields",
         status: "warning",
@@ -216,8 +208,10 @@ const AddNote = () => {
       });
       return;
     }
+
     const formData = new FormData();
-    formData.append("category", category);
+    formData.append("class", noteClass);
+    formData.append("subject", subject);
     formData.append("title", title);
     formData.append("description", description);
     formData.append("youtubeLinks", youtubeLinks);
@@ -225,7 +219,7 @@ const AddNote = () => {
     files.forEach((file) => formData.append("files", file));
 
     editingId
-      ? updateMutation.mutate({ category, id: editingId, formData })
+      ? updateMutation.mutate({ id: editingId, formData })
       : addMutation.mutate(formData);
   };
 
@@ -234,7 +228,8 @@ const AddNote = () => {
   };
 
   const resetForm = () => {
-    setCategory("");
+    setNoteClass("");
+    setSubject("");
     setTitle("");
     setDescription(""); // ✅ Added
     setYoutubeLinks(""); // ✅ Added
@@ -258,15 +253,30 @@ const AddNote = () => {
       >
         <VStack spacing={4} as="form" onSubmit={handleSubmit}>
           <FormControl isRequired>
-            <FormLabel>Select Category</FormLabel>
+            <FormLabel>Select Class</FormLabel>
             <Select
-              placeholder="Select category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              placeholder="Select class"
+              value={noteClass}
+              onChange={(e) => setNoteClass(e.target.value)}
             >
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
+              {classes.map((cls) => (
+                <option key={cls} value={cls}>
+                  {cls}
+                </option>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl isRequired>
+            <FormLabel>Select Subject</FormLabel>
+            <Select
+              placeholder="Select subject"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+            >
+              {subjects.map((sub) => (
+                <option key={sub} value={sub}>
+                  {sub}
                 </option>
               ))}
             </Select>
@@ -404,14 +414,14 @@ const AddNote = () => {
           )}
         </VStack>
 
-        {category && (
+        {noteClass && subject && (
           <>
             <Divider my={6} />
             <Text fontSize="lg" fontWeight="bold">
-              Existing Notes ({category})
+              Existing Notes ({noteClass} - {subject})
             </Text>
 
-            {notes.length === 0 ? (
+            {Array.isArray(notes) && notes.length === 0 ? (
               <Text my={4}>No notes available.</Text>
             ) : (
               <Table variant="simple" mt={4}>
@@ -444,7 +454,7 @@ const AddNote = () => {
                             setTitle(note.title);
                             setDescription(note.description || ""); // ✅ Added
                             setYoutubeLinks(note.youtubeLinks?.join(",") || ""); // ✅ Added
-                            
+
                             setIsEditing(true);
                             // Ensure existing files are set in state
                             const fetchedFiles = note.files.map((file) => ({
@@ -461,7 +471,7 @@ const AddNote = () => {
                           colorScheme="red"
                           ml={2}
                           onClick={() => {
-                            setNoteToDelete({ category, id: note?._id }); // Optional chaining to prevent errors
+                            setNoteToDelete(note?._id); // Optional chaining to prevent errors
                             setIsAlertOpen(true);
                           }}
                         />

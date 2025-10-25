@@ -27,6 +27,8 @@ import Lottie from "react-lottie-player";
 import Notes from "../Assets/notes.json";
 import Videos from "../Assets/video.json";
 import Exam from "../Assets/ExamAni.json";
+import { InfoOutlineIcon } from "@chakra-ui/icons";
+import { Tooltip } from "@chakra-ui/react";
 
 import comingSoonAnimation from "../assets/soon.json"; // Adjust path as needed
 import { useEffect } from "react";
@@ -37,14 +39,15 @@ const StudyMaterialSection = ({
   attachments = [],
   isLoggedIn,
   chapter,
+  allowAccess, // New prop to control access
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [activeLabel, setActiveLabel] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const cancelRef = useRef();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const [previewRestricted, setPreviewRestricted] = useState(false);
   const navigate = useNavigate();
+  const iframeRef = useRef(null);
 
   const {
     isOpen: isMainModalOpen,
@@ -75,21 +78,17 @@ const StudyMaterialSection = ({
   };
 
   const handleItemClick = (item) => {
-    if (!isLoggedIn) {
+    if (!allowAccess) {
       setShowLoginPrompt(true);
       setSelectedItem(item); // Save to open after "Continue"
     } else {
-      if (activeLabel === "Videos" && item) {
-        const videoUrl = handleYouTubeLink(item); // Process the YouTube URL
-        setSelectedItem(videoUrl); // Set the processed video URL
-      } else {
-        setSelectedItem(item);
-      }
+      setSelectedItem(item);
       onDetailModalOpen();
     }
   };
   const handleIframeLoad = () => {
     const iframe = iframeRef.current;
+    if (!iframe) return; // Add null check to prevent accessing contentWindow of null
     const maxHeight = 800; // Set your desired maximum height for scrolling
     iframe.contentWindow.document.addEventListener("scroll", () => {
       if (iframe.contentWindow.document.documentElement.scrollTop > maxHeight) {
@@ -101,9 +100,8 @@ const StudyMaterialSection = ({
     if (!selectedItem) {
       return <Text>No content selected.</Text>;
     }
-
+    
     if (activeLabel === "Videos") {
-      // Check if it's a valid YouTube URL and embed it
       return (
         <Box
           as="iframe"
@@ -119,22 +117,70 @@ const StudyMaterialSection = ({
     }
 
     if (activeLabel === "Notes") {
-      const previewSrc = previewRestricted
-        ? `https://mozilla.github.io/pdf.js/web/viewer.html?file=${import.meta.env.VITE_API_URL}/${selectedItem}#page=1&zoom=page-fit`
-        : `https://mozilla.github.io/pdf.js/web/viewer.html?file=${import.meta.env.VITE_API_URL}/${selectedItem}#page=1`;
+      const normalizedPath = selectedItem.replace(/\\/g, "/");
+      const fileName = normalizedPath
+        .replace(/^uploads\//, "")
+        .split("/")
+        .pop();
+      const fetchPdfUrl = `${
+        import.meta.env.VITE_API_URL
+      }/serve-pdf/${fileName}?logged=${isLoggedIn}`;
 
       return (
-        <Box
-          as="iframe"
-          src={previewSrc}
-          width="100%"
-          height="800px"
-          title="PDF"
-          onLoad={handleIframeLoad}
-          style={{
-            pointerEvents: isLoggedIn ? "auto" : "none", // Disables any interaction when not logged in
-          }}
-        />
+        <>
+         {!isLoggedIn && (
+        <Flex
+          position="absolute"
+          top="6"
+          left="160"
+          zIndex="10"
+          align="center"
+          gap={2}
+        >
+          <Tooltip
+            label="You are viewing only the first page of this document. Please login to view the full content."
+            aria-label="Access Info"
+            hasArrow
+            bg="blue.600"
+            color="white"
+            placement="right"
+          >
+            <InfoOutlineIcon
+              boxSize={4}
+              color="blue.500"
+              cursor="pointer"
+            />
+          </Tooltip>
+        </Flex>
+      )}
+        <Box position="relative" width="100%">
+         
+
+          {/* PDF Preview */}
+          <Box
+            as="iframe"
+            src={fetchPdfUrl}
+            width="100%"
+            height="800px"
+            title="PDF"
+            borderRadius="md"
+            style={{
+              pointerEvents: isLoggedIn ? "auto" : "none",
+              border: "1px solid #ddd",
+            }}
+            onLoad={(e) => {
+              const iframe = e.target;
+              if (!isLoggedIn) {
+                iframe.contentWindow?.document.body?.style?.setProperty(
+                  "overflow",
+                  "hidden"
+                );
+              }
+            }}
+          />
+          
+        </Box>
+        </>
       );
     }
 
@@ -155,9 +201,9 @@ const StudyMaterialSection = ({
         const combinedNotes = [];
 
         for (const category of categories) {
-          const url = `${import.meta.env.VITE_API_URL}/notes/${encodeURIComponent(
-            category
-          )}/random`;
+          const url = `${
+            import.meta.env.VITE_API_URL
+          }/notes/${encodeURIComponent(category)}/random`;
           const res = await fetch(url);
 
           if (!res.ok) {
@@ -168,7 +214,12 @@ const StudyMaterialSection = ({
           combinedNotes.push(...data);
         }
 
-        setRandomNotes(combinedNotes);
+        setRandomNotes(
+          combinedNotes.filter(
+            (note, index, self) =>
+              index === self.findIndex((n) => n._id === note._id)
+          )
+        );
       } catch (error) {
         console.error("❌ Error fetching random notes:", error);
       }
@@ -176,7 +227,6 @@ const StudyMaterialSection = ({
 
     fetchNotesSequentially();
   }, []);
-  console.log("Selected Item:", selectedItem);
 
   return (
     <Box mt="6">
@@ -342,9 +392,13 @@ const StudyMaterialSection = ({
                     loop
                     animationData={comingSoonAnimation}
                     play
-                    style={{ width: 200, height: 200 }}
-                    justifyContent="center"
-                    alignItems="center"
+                    style={{
+                      width: 200,
+                      height: 200,
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
                   />
                 </div>
               )}
@@ -383,7 +437,6 @@ const StudyMaterialSection = ({
               <Button
                 ref={cancelRef}
                 onClick={() => {
-                  setPreviewRestricted(true);
                   setShowLoginPrompt(false);
                   if (selectedItem) {
                     onDetailModalOpen();
