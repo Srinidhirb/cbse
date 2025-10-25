@@ -11,7 +11,7 @@ import {
 
 import Nav from "../components/Nav";
 import Lottie from "react-lottie-player";
-import faqAnimation from "../assets/faq.json"; 
+// import faqAnimation from "../assets/faq.json"; 
 import Footer from "../components/Footer";
 const faqs = [
   {
@@ -70,12 +70,12 @@ export default function FaqPage() {
       <Nav />
       <div className="min-h-screen  px-4 py-12 flex flex-col items-center">
         <div className="flex items-center gap-3 mb-6">
-          <Lottie
+          {/* <Lottie
             loop
             animationData={faqAnimation}
             play
             style={{ width: 100, height: 100 }}
-          />
+          /> */}
           <h1 className="text-4xl font-extrabold text-gray-800">FAQs</h1>
         </div>
         <p className="text-gray-600 max-w-4xl text-lg text-center mb-10">
