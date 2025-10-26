@@ -59,7 +59,7 @@ const CardCarousel = () => {
       </span>
 
       {isLoading && (
-        <div className="flex items-center justify-center h-screen">
+        <div className="flex items-center justify-center h-48">
           <Spinner size="xl" color="blue.500" />
         </div>
       )}
