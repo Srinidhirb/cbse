@@ -5,7 +5,7 @@ import CoursesSlider from "../components/CoursesSlider";
 import Footer from "../components/Footer";
 import Lottie from "react-lottie-player";
 import { Link } from "react-router-dom";
-
+import { Spinner } from "@chakra-ui/react";
 import Loader from "../components/Loader";
 import { motion } from "framer-motion";
 
@@ -47,6 +47,7 @@ function Courses() {
   const [courses, setCourses] = useState(
     allCategories.reduce((acc, cat) => ({ ...acc, [cat]: [] }), {})
   );
+  const [sectionLoading, setSectionLoading] = useState({});
 
   const [loading, setLoading] = useState(true);
 
@@ -66,7 +67,14 @@ function Courses() {
   // Updated function to fetch course data only when a section is expanded
   const fetchCourses = async (noteClass, subject) => {
     try {
-      if (courses[noteClass]?.[subject]?.length > 0) return; // Skip fetching if data already exists
+      // Skip if data already exists
+      if (courses[noteClass]?.[subject]?.length > 0) return;
+
+      // Set loader for this section
+      setSectionLoading((prev) => ({
+        ...prev,
+        [`${noteClass}-${subject}`]: true,
+      }));
 
       const queryParams = new URLSearchParams({ class: noteClass, subject });
       const response = await fetch(
@@ -79,7 +87,7 @@ function Courses() {
           ...prevCourses,
           [noteClass]: {
             ...prevCourses[noteClass],
-            [subject]: result.data, // Ensure data is stored correctly
+            [subject]: result.data,
           },
         }));
       } else {
@@ -90,6 +98,12 @@ function Courses() {
         `Error fetching courses for ${noteClass} - ${subject}:`,
         error
       );
+    } finally {
+      // Remove loader for this section
+      setSectionLoading((prev) => ({
+        ...prev,
+        [`${noteClass}-${subject}`]: false,
+      }));
     }
   };
 
@@ -177,7 +191,11 @@ function Courses() {
                       {selectedSection?.class === noteClass &&
                         selectedSection?.subject === "Science" && (
                           <div className="bg-white rounded-lg p-4 space-y-4 transition-all duration-1000 ease-in-out">
-                            {courses[noteClass]?.["Science"]?.length > 0 ? (
+                            {sectionLoading[`${noteClass}-Science`] ? (
+                              <div className="flex justify-center py-8">
+                                <Spinner size="xl" />
+                              </div>
+                            ) : courses[noteClass]?.["Science"]?.length > 0 ? (
                               courses[noteClass]["Science"].map(
                                 (course, index) => (
                                   <div
@@ -247,7 +265,11 @@ function Courses() {
                       {selectedSection?.class === noteClass &&
                         selectedSection?.subject === "Math" && (
                           <div className="bg-white rounded-lg p-4 space-y-4 transition-all duration-1000 ease-in-out">
-                            {courses[noteClass]?.["Math"]?.length > 0 ? (
+                            {sectionLoading[`${noteClass}-Math`] ? (
+                              <div className="flex justify-center py-8">
+                                <Spinner size={"xl"} />
+                              </div>
+                            ) : courses[noteClass]?.["Math"]?.length > 0 ? (
                               courses[noteClass]["Math"].map(
                                 (course, index) => (
                                   <div
