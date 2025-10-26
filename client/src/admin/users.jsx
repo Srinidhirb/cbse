@@ -16,9 +16,7 @@ import {
 } from "@chakra-ui/react";
 import AdminNavbar from "./AdminNavbar";
 
-// Import dotenv to load environment variables
-import dotenv from "dotenv";
-dotenv.config();
+
 
 function Users() {
   const [users, setUsers] = useState([]);

@@ -18,7 +18,7 @@ import {
   CloseButton,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import dotenv from "dotenv";
+
 
 import StudyMaterialSection from "../components/StudyMaterialSection";
 import Nav from "../components/Nav";
@@ -26,7 +26,7 @@ import Footer from "../components/Footer";
 import Loader from "../components/Loader";
 import { useAuth } from "../context/AuthContext";
 
-dotenv.config();
+
 
 const NoteDetail = () => {
   const { category, id } = useParams();
